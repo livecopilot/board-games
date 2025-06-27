@@ -186,10 +186,10 @@ const GameControls: React.FC<GameControlsProps> = ({
           {/* 滑动指示器 */}
           <Box
             position="absolute"
-            left={isAIMode ? "4px" : "144px"}
-            top="4px"
-            w="132px"
-            h="42px"
+            left={isAIMode ? "6px" : "142px"}
+            top="6px"
+            w="130px"
+            h="38px"
             bg={isAIMode ? "rgba(0, 128, 255, 0.8)" : "rgba(0, 255, 136, 0.8)"}
             borderRadius="full"
             shadow={6}
