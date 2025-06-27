@@ -1,16 +1,17 @@
 import React from 'react';
 import {
-  View,
+  Box,
   Text,
-  StyleSheet,
-  SafeAreaView,
   ScrollView,
-} from 'react-native';
+  VStack,
+  Heading,
+} from 'native-base';
 import TicTacToeBoard from '../components/TicTacToeBoard';
 import GameControls from '../components/GameControls';
 import { useTicTacToe } from '../hooks/useTicTacToe';
+import type { TicTacToeScreenProps } from '../types/navigation';
 
-const TicTacToeScreen: React.FC = () => {
+const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   const {
     gameState,
     isAIMode,
@@ -22,25 +23,29 @@ const TicTacToeScreen: React.FC = () => {
   } = useTicTacToe();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Box flex={1} bg="gray.50" safeArea>
       <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingVertical: 20 }}
       >
         {/* 游戏标题 */}
-        <View style={styles.header}>
-          <Text style={styles.title}>井字棋</Text>
-          <Text style={styles.subtitle}>亲子对弈游戏</Text>
-        </View>
+        <VStack alignItems="center" mb={8} px={5}>
+          <Heading size="xl" color="gray.800" mb={2}>
+            井字棋
+          </Heading>
+          <Text fontSize="md" color="gray.600" italic>
+            亲子对弈游戏
+          </Text>
+        </VStack>
 
         {/* 游戏棋盘 */}
-        <View style={styles.boardContainer}>
+        <Box alignItems="center" mb={5}>
           <TicTacToeBoard
             board={gameState.board}
             onCellPress={playerMove}
             disabled={gameState.isGameOver || (isAIMode && gameState.currentPlayer === 'O')}
           />
-        </View>
+        </Box>
 
         {/* 游戏控制 */}
         <GameControls
@@ -55,110 +60,56 @@ const TicTacToeScreen: React.FC = () => {
         />
 
         {/* 游戏说明 */}
-        <View style={styles.instructionsContainer}>
-          <Text style={styles.instructionsTitle}>游戏规则：</Text>
-          <Text style={styles.instructionText}>
-            • 玩家轮流在3×3的棋盘上放置X或O
+        <Box bg="gray.100" mx={5} p={4} borderRadius="lg" mb={4}>
+          <Text fontSize="md" fontWeight="bold" color="gray.800" mb={3}>
+            游戏规则：
           </Text>
-          <Text style={styles.instructionText}>
-            • 率先在横、竖或斜线上连成三个相同标记的玩家获胜
-          </Text>
-          <Text style={styles.instructionText}>
-            • 棋盘填满且无人获胜则为平局
-          </Text>
-          <Text style={styles.instructionText}>
-            • 支持人机对战和双人对战模式
-          </Text>
-        </View>
+          <VStack space={1}>
+            <Text fontSize="sm" color="gray.700">
+              • 玩家轮流在3×3的棋盘上放置X或O
+            </Text>
+            <Text fontSize="sm" color="gray.700">
+              • 率先在横、竖或斜线上连成三个相同标记的玩家获胜
+            </Text>
+            <Text fontSize="sm" color="gray.700">
+              • 棋盘填满且无人获胜则为平局
+            </Text>
+            <Text fontSize="sm" color="gray.700">
+              • 支持人机对战和双人对战模式
+            </Text>
+          </VStack>
+        </Box>
 
         {/* 亲子建议 */}
-        <View style={styles.tipsContainer}>
-          <Text style={styles.tipsTitle}>亲子游戏建议：</Text>
-          <Text style={styles.tipText}>
-            🎯 可以让孩子先手，培养策略思维
+        <Box 
+          bg="green.50" 
+          mx={5} 
+          p={4} 
+          borderRadius="lg" 
+          borderLeftWidth={4} 
+          borderLeftColor="green.500"
+        >
+          <Text fontSize="md" fontWeight="bold" color="green.700" mb={3}>
+            亲子游戏建议：
           </Text>
-          <Text style={styles.tipText}>
-            🤖 AI模式适合练习和学习
-          </Text>
-          <Text style={styles.tipText}>
-            👥 双人模式适合亲子互动
-          </Text>
-          <Text style={styles.tipText}>
-            🔄 使用撤销功能教导孩子思考
-          </Text>
-        </View>
+          <VStack space={1}>
+            <Text fontSize="sm" color="green.800">
+              🎯 可以让孩子先手，培养策略思维
+            </Text>
+            <Text fontSize="sm" color="green.800">
+              🤖 AI模式适合练习和学习
+            </Text>
+            <Text fontSize="sm" color="green.800">
+              👥 双人模式适合亲子互动
+            </Text>
+            <Text fontSize="sm" color="green.800">
+              🔄 使用撤销功能教导孩子思考
+            </Text>
+          </VStack>
+        </Box>
       </ScrollView>
-    </SafeAreaView>
+    </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingVertical: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    fontStyle: 'italic',
-  },
-  boardContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  instructionsContainer: {
-    backgroundColor: '#ecf0f1',
-    margin: 20,
-    padding: 15,
-    borderRadius: 8,
-  },
-  instructionsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 10,
-  },
-  instructionText: {
-    fontSize: 14,
-    color: '#34495e',
-    marginBottom: 5,
-    lineHeight: 20,
-  },
-  tipsContainer: {
-    backgroundColor: '#e8f5e8',
-    margin: 20,
-    padding: 15,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#27ae60',
-  },
-  tipsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#27ae60',
-    marginBottom: 10,
-  },
-  tipText: {
-    fontSize: 14,
-    color: '#2d5a3d',
-    marginBottom: 5,
-    lineHeight: 20,
-  },
-});
 
 export default TicTacToeScreen; 

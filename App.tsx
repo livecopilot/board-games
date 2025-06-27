@@ -5,79 +5,51 @@
  * @format
  */
 
-import React, { useState } from 'react';
-import { StatusBar, useColorScheme, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import HomeScreen from './src/screens/HomeScreen';
-import TicTacToeScreen from './src/screens/TicTacToeScreen';
+import React from 'react';
+import { StatusBar, useColorScheme } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { NativeBaseProvider, extendTheme } from 'native-base';
+import { enableScreens } from 'react-native-screens';
+import AppNavigator from './src/navigation/AppNavigator';
+
+// 启用原生屏幕优化
+enableScreens();
+
+// 自定义主题
+const theme = extendTheme({
+  colors: {
+    primary: {
+      50: '#e3f2fd',
+      100: '#bbdefb',
+      200: '#90caf9',
+      300: '#64b5f6',
+      400: '#42a5f5',
+      500: '#2196f3',
+      600: '#1e88e5',
+      700: '#1976d2',
+      800: '#1565c0',
+      900: '#0d47a1',
+    },
+  },
+  config: {
+    initialColorMode: 'light',
+  },
+});
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const [currentScreen, setCurrentScreen] = useState<'home' | 'tic-tac-toe'>('home');
-
-  const handleGameSelect = (gameType: string) => {
-    if (gameType === 'tic-tac-toe') {
-      setCurrentScreen('tic-tac-toe');
-    }
-  };
-
-  const handleBackToHome = () => {
-    setCurrentScreen('home');
-  };
-
-  const renderScreen = () => {
-    switch (currentScreen) {
-      case 'home':
-        return <HomeScreen onGameSelect={handleGameSelect} />;
-      case 'tic-tac-toe':
-        return (
-          <View style={styles.gameContainer}>
-            {/* 返回按钮 */}
-            <View style={styles.backButtonContainer}>
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={handleBackToHome}
-              >
-                <Text style={styles.backButtonText}>← 返回主菜单</Text>
-              </TouchableOpacity>
-            </View>
-            <TicTacToeScreen />
-          </View>
-        );
-      default:
-        return <HomeScreen onGameSelect={handleGameSelect} />;
-    }
-  };
 
   return (
-    <>
-      <StatusBar 
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
-        backgroundColor="#f8f9fa"
-      />
-      {renderScreen()}
-    </>
+    <NativeBaseProvider theme={theme}>
+      <NavigationContainer>
+        <StatusBar 
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
+          backgroundColor="#2196f3"
+        />
+        <AppNavigator />
+      </NavigationContainer>
+    </NativeBaseProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  gameContainer: {
-    flex: 1,
-  },
-  backButtonContainer: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#3498db',
-    fontWeight: '600',
-  },
-});
 
 export default App;
