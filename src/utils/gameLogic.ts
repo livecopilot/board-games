@@ -395,17 +395,17 @@ export const checkCheckersWinner = (
 export const getCheckersAIMove = (
   board: CheckersBoard,
   player: "red" | "black",
-  difficulty: string = "medium"
+  difficulty: AIDifficulty = AIDifficulty.MEDIUM
 ): CheckersMove | null => {
   const availableMoves = getCheckersAvailableMoves(board, player);
   if (availableMoves.length === 0) return null;
 
   switch (difficulty) {
-    case "easy":
+    case AIDifficulty.EASY:
       return getEasyAIMove(availableMoves);
-    case "medium":
+    case AIDifficulty.MEDIUM:
       return getMediumAIMove(board, availableMoves, player);
-    case "hard":
+    case AIDifficulty.HARD:
       return getHardAIMove(board, availableMoves, player);
     default:
       return getMediumAIMove(board, availableMoves, player);

@@ -36,6 +36,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   mustCapture,
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showToggleDialog, setShowToggleDialog] = useState(false);
 
   const getStatusText = () => {
     if (isGameOver) {
@@ -87,6 +88,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   };
 
   const handleToggleAI = () => {
+    setShowToggleDialog(false);
     onToggleAI();
   };
 
@@ -223,7 +225,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
         
         {/* Toggle开关样式的模式切换 */}
         <Pressable
-          onPress={handleToggleAI}
+          onPress={() => setShowToggleDialog(true)}
           bg="rgba(255, 255, 255, 0.05)"
           borderWidth={2}
           borderColor="rgba(255, 0, 128, 0.4)"
@@ -405,6 +407,96 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
                 _pressed={{ bg: "#cc0066" }}
               >
                 确认重新开始
+              </Button>
+            </HStack>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* AI模式切换确认弹框 */}
+      <Modal
+        isVisible={showToggleDialog}
+        onBackdropPress={() => setShowToggleDialog(false)}
+        onBackButtonPress={() => setShowToggleDialog(false)}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        backdropOpacity={0.7}
+        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Box
+          bg="#000015"
+          borderColor="rgba(255, 0, 128, 0.3)"
+          borderWidth={1}
+          borderRadius="lg"
+          w="85%"
+          shadow={5}
+        >
+          {/* 头部 */}
+          <HStack
+            justifyContent="space-between"
+            alignItems="center"
+            bg="rgba(255, 0, 128, 0.1)"
+            borderTopRadius="lg"
+            borderBottomWidth={1}
+            borderBottomColor="rgba(255, 0, 128, 0.3)"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="lg" fontWeight="bold" color="#ff0080" fontFamily="mono">
+              {isAIMode ? '关闭AI模式' : '开启AI模式'}
+            </Text>
+            <Pressable
+              onPress={() => setShowToggleDialog(false)}
+              _pressed={{ bg: "rgba(255, 0, 128, 0.1)" }}
+              borderRadius="md"
+              px={2}
+              py={1}
+            >
+              <Text
+                color="#ff0080"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                关闭
+              </Text>
+            </Pressable>
+          </HStack>
+
+          {/* 内容 */}
+          <Box p={4}>
+            <Text color="white" fontSize="md" textAlign="center">
+              {isAIMode 
+                ? '切换到双人对战模式？游戏将重新开始。' 
+                : '切换到人机对战模式？游戏将重新开始。'}
+            </Text>
+          </Box>
+
+          {/* 底部按钮 */}
+          <Box
+            bg="rgba(255, 0, 128, 0.05)"
+            borderBottomRadius="lg"
+            borderTopWidth={1}
+            borderTopColor="rgba(255, 0, 128, 0.2)"
+            p={4}
+          >
+            <HStack space={2}>
+              <Button
+                variant="ghost"
+                flex={1}
+                onPress={() => setShowToggleDialog(false)}
+                _text={{ color: "gray.400" }}
+              >
+                取消
+              </Button>
+              <Button
+                bg="#ff0080"
+                flex={1}
+                onPress={handleToggleAI}
+                _text={{ color: "white", fontWeight: "bold" }}
+                _pressed={{ bg: "#cc0066" }}
+              >
+                确认切换
               </Button>
             </HStack>
           </Box>

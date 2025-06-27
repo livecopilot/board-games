@@ -88,52 +88,16 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
 
       {/* 顶部栏 */}
       <HStack
-        justifyContent="space-between"
         alignItems="center"
         px={5}
         py={3}
         borderBottomWidth={1}
         borderBottomColor="rgba(0, 255, 136, 0.2)"
       >
-        {/* 返回按钮 */}
-        <Pressable
-          onPress={handleBackPress}
-          _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
-          borderRadius="lg"
-          bg="rgba(0, 255, 136, 0.05)"
-          borderWidth={1}
-          borderColor="rgba(0, 255, 136, 0.3)"
-          px={3}
-          py={2}
-        >
-          <HStack alignItems="center" space={1}>
-            <IconFont name="arrow-back" size={16} color="#00ff88" />
-            <Text
-              color="#00ff88"
-              fontWeight="bold"
-              fontSize="sm"
-              fontFamily="mono"
-            >
-              返回
-            </Text>
-          </HStack>
-        </Pressable>
-
-        {/* 标题 */}
-        <Heading
-          size="lg"
-          color="white"
-          fontFamily="mono"
-          fontWeight="300"
-          letterSpacing={1}
-        >
-          井字棋
-        </Heading>
-
-        {/* 功能按钮 */}
-        <HStack space={2}>
+        {/* 左侧：返回按钮 */}
+        <Box flex={1}>
           <Pressable
-            onPress={() => setShowRules(true)}
+            onPress={handleBackPress}
             _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
             borderRadius="lg"
             bg="rgba(0, 255, 136, 0.05)"
@@ -141,64 +105,106 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
             borderColor="rgba(0, 255, 136, 0.3)"
             px={3}
             py={2}
+            alignSelf="flex-start"
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="book" size={14} color="#00ff88" />
+              <IconFont name="arrow-back" size={16} color="#00ff88" />
               <Text
                 color="#00ff88"
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
               >
-                规则
+                返回
               </Text>
             </HStack>
           </Pressable>
-          <Pressable
-            onPress={() => setShowTips(true)}
-            _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
-            borderRadius="lg"
-            bg="rgba(255, 128, 0, 0.05)"
-            borderWidth={1}
-            borderColor="rgba(255, 128, 0, 0.3)"
-            px={3}
-            py={2}
+        </Box>
+
+        {/* 中间：标题 */}
+        <Box flex={1} alignItems="center">
+          <Heading
+            size="lg"
+            color="white"
+            fontFamily="mono"
+            fontWeight="300"
+            letterSpacing={1}
           >
-            <HStack alignItems="center" space={1}>
-              <IconFont name="bulb" size={14} color="#ff8000" />
-              <Text
-                color="#ff8000"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                建议
-              </Text>
-            </HStack>
-          </Pressable>
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            _pressed={{ bg: "rgba(128, 128, 255, 0.1)" }}
-            borderRadius="lg"
-            bg="rgba(128, 128, 255, 0.05)"
-            borderWidth={1}
-            borderColor="rgba(128, 128, 255, 0.3)"
-            px={3}
-            py={2}
-          >
-            <HStack alignItems="center" space={1}>
-              <IconFont name="settings" size={14} color="#8080ff" />
-              <Text
-                color="#8080ff"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                设置
-              </Text>
-            </HStack>
-          </Pressable>
-        </HStack>
+            井字棋
+          </Heading>
+        </Box>
+
+        {/* 右侧：功能按钮 */}
+        <Box flex={1}>
+          <HStack space={2} justifyContent="flex-end">
+            <Pressable
+              onPress={() => setShowRules(true)}
+              _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
+              borderRadius="lg"
+              bg="rgba(0, 255, 136, 0.05)"
+              borderWidth={1}
+              borderColor="rgba(0, 255, 136, 0.3)"
+              px={3}
+              py={2}
+            >
+              <HStack alignItems="center" space={1}>
+                <IconFont name="book" size={14} color="#00ff88" />
+                <Text
+                  color="#00ff88"
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  规则
+                </Text>
+              </HStack>
+            </Pressable>
+            <Pressable
+              onPress={() => setShowTips(true)}
+              _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
+              borderRadius="lg"
+              bg="rgba(255, 128, 0, 0.05)"
+              borderWidth={1}
+              borderColor="rgba(255, 128, 0, 0.3)"
+              px={3}
+              py={2}
+            >
+              <HStack alignItems="center" space={1}>
+                <IconFont name="bulb" size={14} color="#ff8000" />
+                <Text
+                  color="#ff8000"
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  建议
+                </Text>
+              </HStack>
+            </Pressable>
+            <Pressable
+              onPress={() => setShowSettings(true)}
+              _pressed={{ bg: "rgba(128, 128, 255, 0.1)" }}
+              borderRadius="lg"
+              bg="rgba(128, 128, 255, 0.05)"
+              borderWidth={1}
+              borderColor="rgba(128, 128, 255, 0.3)"
+              px={3}
+              py={2}
+            >
+              <HStack alignItems="center" space={1}>
+                <IconFont name="settings" size={14} color="#8080ff" />
+                <Text
+                  color="#8080ff"
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  设置
+                </Text>
+              </HStack>
+            </Pressable>
+          </HStack>
+        </Box>
       </HStack>
 
       <ScrollView 

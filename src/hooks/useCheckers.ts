@@ -131,7 +131,7 @@ export const useCheckers = () => {
 
   // 调度AI移动
   const scheduleAIMove = useCallback((currentState: CheckersGameState) => {
-    if (isAIThinking || currentState.isGameOver) return;
+    if (isAIThinking || currentState.isGameOver || currentState.currentPlayer !== "black") return;
     
     setIsAIThinking(true);
     
@@ -143,14 +143,45 @@ export const useCheckers = () => {
     }[aiDifficulty];
 
     aiMoveTimeoutRef.current = setTimeout(() => {
+      // 直接在这里执行AI移动，确保使用正确的状态
       const aiMoveResult = getCheckersAIMove(currentState.board, "black", aiDifficulty);
       if (aiMoveResult) {
-        executeMove(aiMoveResult, false); // 不再触发新的AI移动
+        const newBoard = makeCheckersMove(currentState.board, aiMoveResult);
+        let nextPlayer = currentState.currentPlayer;
+        let mustCapture: Position | undefined;
+
+        // 检查是否需要继续跳跃
+        if (aiMoveResult.captured && aiMoveResult.captured.length > 0 && canContinueCapture(newBoard, aiMoveResult.to)) {
+          mustCapture = aiMoveResult.to;
+          // 继续当前玩家的回合
+        } else {
+          // 切换玩家
+          nextPlayer = currentState.currentPlayer === "red" ? "black" : "red";
+          mustCapture = undefined;
+        }
+
+        const winner = checkCheckersWinner(newBoard, nextPlayer);
+        const isGameOver = winner !== null;
+
+        const newState: CheckersGameState = {
+          board: newBoard,
+          currentPlayer: nextPlayer,
+          isGameOver,
+          winner,
+          mustCapture,
+          lastMove: aiMoveResult,
+        };
+
+        setGameState(newState);
+        setGameHistory(prev => [...prev, newState]);
+        setSelectedPiece(mustCapture || null);
+        setAvailableMoves([]);
       }
+      
       setIsAIThinking(false);
       aiMoveTimeoutRef.current = null;
     }, thinkingTime);
-  }, [aiDifficulty, isAIThinking, executeMove]);
+  }, [aiDifficulty, isAIThinking]);
 
   // 尝试移动到指定位置
   const moveTo = useCallback((position: Position) => {
