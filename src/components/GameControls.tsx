@@ -95,6 +95,7 @@ const GameControls: React.FC<GameControlsProps> = ({
         minW="200px"
         alignItems="center"
         shadow={3}
+        mt={3}
       >
         <Text
           fontSize="lg"
@@ -108,7 +109,7 @@ const GameControls: React.FC<GameControlsProps> = ({
       </Box>
 
       {/* 控制按钮 */}
-      <HStack space={3} justifyContent="center" w="100%">
+      <HStack space={2} justifyContent="center" w="100%">
         {/* 重新开始按钮 */}
         <Pressable
           onPress={() => setShowResetDialog(true)}
@@ -116,7 +117,7 @@ const GameControls: React.FC<GameControlsProps> = ({
           borderWidth={1}
           borderColor="rgba(255, 0, 128, 0.4)"
           borderRadius="lg"
-          px={4}
+          px={3}
           py={3}
           flex={1}
           alignItems="center"
@@ -126,7 +127,7 @@ const GameControls: React.FC<GameControlsProps> = ({
           <Text
             color="#ff0080"
             fontWeight="bold"
-            fontSize="sm"
+            fontSize="xs"
             fontFamily="mono"
           >
             重新开始
@@ -141,7 +142,7 @@ const GameControls: React.FC<GameControlsProps> = ({
           borderWidth={1}
           borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
           borderRadius="lg"
-          px={4}
+          px={3}
           py={3}
           flex={1}
           alignItems="center"
@@ -151,104 +152,59 @@ const GameControls: React.FC<GameControlsProps> = ({
           <Text
             color={canUndo ? "#ff8000" : "gray.500"}
             fontWeight="bold"
-            fontSize="sm"
+            fontSize="xs"
             fontFamily="mono"
           >
             撤销
           </Text>
         </Pressable>
-      </HStack>
 
-      {/* 游戏模式切换器 */}
-      <VStack alignItems="center" space={3} w="100%">
-        <Text
-          fontSize="sm"
-          color="rgba(255, 255, 255, 0.8)"
-          fontFamily="mono"
-          fontWeight="bold"
-        >
-          游戏模式
-        </Text>
-        
-        {/* Toggle开关样式的模式切换 */}
+        {/* 游戏模式切换按钮 */}
         <Pressable
           onPress={() => setShowToggleDialog(true)}
-          bg="rgba(255, 255, 255, 0.05)"
-          borderWidth={2}
-          borderColor="rgba(0, 255, 136, 0.4)"
-          borderRadius="full"
-          w="280px"
-          h="50px"
-          position="relative"
-          shadow={4}
-          _pressed={{ bg: "rgba(255, 255, 255, 0.1)" }}
-        >
-          {/* 滑动指示器 */}
-          <Box
-            position="absolute"
-            left={isAIMode ? "6px" : "142px"}
-            top="6px"
-            w="130px"
-            h="38px"
-            bg={isAIMode ? "rgba(0, 128, 255, 0.8)" : "rgba(0, 255, 136, 0.8)"}
-            borderRadius="full"
-            shadow={6}
-          />
-          
-          {/* 模式选项 */}
-          <HStack h="100%" alignItems="center">
-            {/* AI模式选项 */}
-            <Box flex={1} alignItems="center" justifyContent="center">
-              <HStack alignItems="center" space={2}>
-                <Text fontSize="lg">🤖</Text>
-                <Text
-                  color={isAIMode ? "white" : "rgba(255, 255, 255, 0.6)"}
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  AI对战
-                </Text>
-              </HStack>
-            </Box>
-            
-            {/* 双人模式选项 */}
-            <Box flex={1} alignItems="center" justifyContent="center">
-              <HStack alignItems="center" space={2}>
-                <Text fontSize="lg">👥</Text>
-                <Text
-                  color={!isAIMode ? "black" : "rgba(255, 255, 255, 0.6)"}
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  双人对战
-                </Text>
-              </HStack>
-            </Box>
-          </HStack>
-        </Pressable>
-
-        {/* 当前模式说明 */}
-        <Box
-          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
+          bg="rgba(0, 255, 136, 0.1)"
           borderWidth={1}
-          borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(0, 255, 136, 0.3)"}
+          borderColor="rgba(0, 255, 136, 0.4)"
           borderRadius="lg"
-          px={4}
-          py={2}
+          px={3}
+          py={3}
+          flex={1.2}
+          alignItems="center"
+          _pressed={{ bg: "rgba(0, 255, 136, 0.2)" }}
+          shadow={2}
         >
           <Text
+            color="#00ff88"
+            fontWeight="bold"
             fontSize="xs"
-            color={isAIMode ? "#0080ff" : "#00ff88"}
-            textAlign="center"
             fontFamily="mono"
-            letterSpacing={0.5}
+            textAlign="center"
           >
-            {isAIMode ? '🤖 你是X，AI是O' : '👥 本地双人对战'}
+            {isAIMode ? 'AI对战' : '双人对战'}
           </Text>
-        </Box>
-      </VStack>
+        </Pressable>
+      </HStack>
+
+      {/* 当前模式说明 */}
+      <Box
+        bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
+        borderWidth={1}
+        borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(0, 255, 136, 0.3)"}
+        borderRadius="lg"
+        px={4}
+        py={2}
+        w="100%"
+      >
+        <Text
+          fontSize="xs"
+          color={isAIMode ? "#0080ff" : "#00ff88"}
+          textAlign="center"
+          fontFamily="mono"
+          letterSpacing={0.5}
+        >
+          {isAIMode ? '你是X，AI是O' : '本地双人对战'}
+        </Text>
+      </Box>
 
       {/* 重新开始确认弹框 */}
       <Modal
