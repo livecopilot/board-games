@@ -29,6 +29,13 @@ export interface GameConfig {
   difficulty?: "easy" | "medium" | "hard";
 }
 
+// AI难度枚举
+export enum AIDifficulty {
+  EASY = "easy",
+  MEDIUM = "medium",
+  HARD = "hard",
+}
+
 // 井字棋相关类型
 export type CellValue = "X" | "O" | null;
 export type Board = CellValue[][];

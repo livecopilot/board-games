@@ -15,6 +15,7 @@ interface CheckersControlsProps {
   winner: 'red' | 'black' | 'draw' | null;
   isGameOver: boolean;
   isAIMode: boolean;
+  isAIThinking: boolean;
   canUndo: boolean;
   onReset: () => void;
   onUndo: () => void;
@@ -27,6 +28,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   winner,
   isGameOver,
   isAIMode,
+  isAIThinking,
   canUndo,
   onReset,
   onUndo,
@@ -34,7 +36,6 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   mustCapture,
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
-  const [showToggleDialog, setShowToggleDialog] = useState(false);
 
   const getStatusText = () => {
     if (isGameOver) {
@@ -47,7 +48,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
       return `${winner === 'red' ? '红方' : '黑方'} 获胜！`;
     }
     
-    if (isAIMode && currentPlayer === 'black') {
+    if (isAIThinking) {
       return 'AI 思考中...';
     }
 
@@ -69,6 +70,10 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
       return winner === 'red' ? '#ff3030' : '#303030';
     }
     
+    if (isAIThinking) {
+      return '#0080ff'; // 蓝色
+    }
+    
     if (mustCapture) {
       return '#ffff00'; // 黄色提醒
     }
@@ -82,7 +87,6 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   };
 
   const handleToggleAI = () => {
-    setShowToggleDialog(false);
     onToggleAI();
   };
 
@@ -110,7 +114,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
         </Text>
 
         {/* 当前玩家指示器 */}
-        {!isGameOver && (
+        {!isGameOver && !isAIThinking && (
           <HStack alignItems="center" mt={2} space={2}>
             <Box
               w="16px"
@@ -127,6 +131,28 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
               fontFamily="mono"
             >
               {currentPlayer === 'red' ? '红方回合' : '黑方回合'}
+            </Text>
+          </HStack>
+        )}
+
+        {/* AI思考指示器 */}
+        {isAIThinking && (
+          <HStack alignItems="center" mt={2} space={2}>
+            <Box
+              w="16px"
+              h="16px"
+              borderRadius="full"
+              bg="#0080ff"
+              borderWidth={2}
+              borderColor="#4da6ff"
+              shadow={3}
+            />
+            <Text
+              fontSize="sm"
+              color="#0080ff"
+              fontFamily="mono"
+            >
+              🤖 AI正在思考...
             </Text>
           </HStack>
         )}
@@ -182,42 +208,98 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             撤销
           </Text>
         </Pressable>
-
-        {/* AI模式切换按钮 */}
-        <Pressable
-          onPress={() => setShowToggleDialog(true)}
-          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
-          borderWidth={1}
-          borderColor={isAIMode ? "rgba(0, 128, 255, 0.4)" : "rgba(0, 255, 136, 0.4)"}
-          borderRadius="lg"
-          px={4}
-          py={3}
-          flex={1}
-          alignItems="center"
-          _pressed={isAIMode ? { bg: "rgba(0, 128, 255, 0.2)" } : { bg: "rgba(0, 255, 136, 0.2)" }}
-          shadow={2}
-        >
-          <Text
-            color={isAIMode ? "#0080ff" : "#00ff88"}
-            fontWeight="bold"
-            fontSize="sm"
-            fontFamily="mono"
-          >
-            {isAIMode ? 'AI模式' : '双人模式'}
-          </Text>
-        </Pressable>
       </HStack>
 
-      {/* 模式说明 */}
-      <Text
-        fontSize="xs"
-        color="rgba(255, 255, 255, 0.6)"
-        textAlign="center"
-        fontFamily="mono"
-        letterSpacing={0.5}
-      >
-        当前模式: {isAIMode ? '人机对战 (你是红方，AI是黑方)' : '双人对战'}
-      </Text>
+      {/* 游戏模式切换器 */}
+      <VStack alignItems="center" space={3} w="100%">
+        <Text
+          fontSize="sm"
+          color="rgba(255, 255, 255, 0.8)"
+          fontFamily="mono"
+          fontWeight="bold"
+        >
+          游戏模式
+        </Text>
+        
+        {/* Toggle开关样式的模式切换 */}
+        <Pressable
+          onPress={handleToggleAI}
+          bg="rgba(255, 255, 255, 0.05)"
+          borderWidth={2}
+          borderColor="rgba(255, 0, 128, 0.4)"
+          borderRadius="full"
+          w="280px"
+          h="50px"
+          position="relative"
+          shadow={4}
+          _pressed={{ bg: "rgba(255, 255, 255, 0.1)" }}
+        >
+          {/* 滑动指示器 */}
+          <Box
+            position="absolute"
+            left={isAIMode ? "4px" : "144px"}
+            top="4px"
+            w="132px"
+            h="42px"
+            bg={isAIMode ? "rgba(0, 128, 255, 0.8)" : "rgba(255, 0, 128, 0.8)"}
+            borderRadius="full"
+            shadow={6}
+          />
+          
+          {/* 模式选项 */}
+          <HStack h="100%" alignItems="center">
+            {/* AI模式选项 */}
+            <Box flex={1} alignItems="center" justifyContent="center">
+              <HStack alignItems="center" space={2}>
+                <Text fontSize="lg">🤖</Text>
+                <Text
+                  color={isAIMode ? "white" : "rgba(255, 255, 255, 0.6)"}
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  AI对战
+                </Text>
+              </HStack>
+            </Box>
+            
+            {/* 双人模式选项 */}
+            <Box flex={1} alignItems="center" justifyContent="center">
+              <HStack alignItems="center" space={2}>
+                <Text fontSize="lg">👥</Text>
+                <Text
+                  color={!isAIMode ? "white" : "rgba(255, 255, 255, 0.6)"}
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  双人对战
+                </Text>
+              </HStack>
+            </Box>
+          </HStack>
+        </Pressable>
+
+        {/* 当前模式说明 */}
+        <Box
+          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(255, 0, 128, 0.1)"}
+          borderWidth={1}
+          borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(255, 0, 128, 0.3)"}
+          borderRadius="lg"
+          px={4}
+          py={2}
+        >
+          <Text
+            fontSize="xs"
+            color={isAIMode ? "#0080ff" : "#ff0080"}
+            textAlign="center"
+            fontFamily="mono"
+            letterSpacing={0.5}
+          >
+            {isAIMode ? '🤖 你是红方，AI是黑方' : '👥 本地双人对战'}
+          </Text>
+        </Box>
+      </VStack>
 
       {/* 游戏提示 */}
       {mustCapture && (
@@ -323,96 +405,6 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
                 _pressed={{ bg: "#cc0066" }}
               >
                 确认重新开始
-              </Button>
-            </HStack>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* AI模式切换确认弹框 */}
-      <Modal
-        isVisible={showToggleDialog}
-        onBackdropPress={() => setShowToggleDialog(false)}
-        onBackButtonPress={() => setShowToggleDialog(false)}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(0, 255, 136, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="85%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(0, 255, 136, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(0, 255, 136, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="#00ff88" fontFamily="mono">
-              {isAIMode ? '关闭AI模式' : '开启AI模式'}
-            </Text>
-            <Pressable
-              onPress={() => setShowToggleDialog(false)}
-              _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="#00ff88"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <Box p={4}>
-            <Text color="white" fontSize="md" textAlign="center">
-              {isAIMode 
-                ? '切换到双人对战模式？游戏将重新开始。' 
-                : '切换到人机对战模式？游戏将重新开始。'}
-            </Text>
-          </Box>
-
-          {/* 底部按钮 */}
-          <Box
-            bg="rgba(0, 255, 136, 0.05)"
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor="rgba(0, 255, 136, 0.2)"
-            p={4}
-          >
-            <HStack space={2}>
-              <Button
-                variant="ghost"
-                flex={1}
-                onPress={() => setShowToggleDialog(false)}
-                _text={{ color: "gray.400" }}
-              >
-                取消
-              </Button>
-              <Button
-                bg="#00ff88"
-                flex={1}
-                onPress={handleToggleAI}
-                _text={{ color: "black", fontWeight: "bold" }}
-                _pressed={{ bg: "#00cc6a" }}
-              >
-                确认切换
               </Button>
             </HStack>
           </Box>

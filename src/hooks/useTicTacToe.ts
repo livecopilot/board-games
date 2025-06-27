@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { GameState, Position, CellValue } from "../types";
-import { createEmptyBoard, checkWinner, makeMove, isValidMove, getAIMove } from "../utils/gameLogic";
+import { useState, useCallback, useRef } from "react";
+import { GameState, Position, CellValue, AIDifficulty } from "../types";
+import { createEmptyBoard, checkWinner, makeMove, isValidMove, getTicTacToeAIMove } from "../utils/gameLogic";
 
 export const useTicTacToe = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -11,10 +11,21 @@ export const useTicTacToe = () => {
   });
 
   const [isAIMode, setIsAIMode] = useState(false);
+  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(AIDifficulty.MEDIUM);
   const [gameHistory, setGameHistory] = useState<GameState[]>([]);
+  const [isAIThinking, setIsAIThinking] = useState(false);
+
+  // 使用ref来跟踪AI移动状态，避免循环调用
+  const aiMoveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 重置游戏
   const resetGame = useCallback(() => {
+    // 清除AI移动的定时器
+    if (aiMoveTimeoutRef.current) {
+      clearTimeout(aiMoveTimeoutRef.current);
+      aiMoveTimeoutRef.current = null;
+    }
+
     const newState: GameState = {
       board: createEmptyBoard(),
       currentPlayer: "X",
@@ -23,11 +34,12 @@ export const useTicTacToe = () => {
     };
     setGameState(newState);
     setGameHistory([newState]);
+    setIsAIThinking(false);
   }, []);
 
-  // 执行玩家移动
-  const playerMove = useCallback(
-    (position: Position) => {
+  // 执行移动（内部函数，不直接触发AI）
+  const executeMove = useCallback(
+    (position: Position, triggerAI: boolean = true) => {
       if (gameState.isGameOver || !isValidMove(gameState.board, position)) {
         return false;
       }
@@ -46,11 +58,9 @@ export const useTicTacToe = () => {
       setGameState(newState);
       setGameHistory((prev) => [...prev, newState]);
 
-      // 如果是AI模式且游戏未结束且下一个玩家是O，触发AI移动
-      if (isAIMode && !isGameOver && newState.currentPlayer === "O") {
-        setTimeout(() => {
-          aiMove(newState);
-        }, 500); // 延迟500ms使AI移动更自然
+      // 只有在需要触发AI且满足条件时才触发AI移动
+      if (triggerAI && isAIMode && !isGameOver && newState.currentPlayer === "O") {
+        scheduleAIMove(newState);
       }
 
       return true;
@@ -58,31 +68,54 @@ export const useTicTacToe = () => {
     [gameState, isAIMode]
   );
 
-  // AI移动
-  const aiMove = useCallback((currentState: GameState) => {
-    if (currentState.isGameOver) {
-      return;
-    }
+  // 玩家移动
+  const playerMove = useCallback(
+    (position: Position) => {
+      if (isAIThinking) return false;
+      return executeMove(position, true);
+    },
+    [executeMove, isAIThinking]
+  );
 
-    const aiPosition = getAIMove(currentState.board);
-    if (!aiPosition) {
-      return;
-    }
+  // 调度AI移动
+  const scheduleAIMove = useCallback(
+    (currentState: GameState) => {
+      if (isAIThinking || currentState.isGameOver || currentState.currentPlayer !== "O") return;
 
-    const newBoard = makeMove(currentState.board, aiPosition, "O");
-    const winner = checkWinner(newBoard);
-    const isGameOver = winner !== null;
+      setIsAIThinking(true);
 
-    const newState: GameState = {
-      board: newBoard,
-      currentPlayer: "X",
-      isGameOver,
-      winner,
-    };
+      // 根据难度设置思考时间
+      const thinkingTime = {
+        [AIDifficulty.EASY]: 300,
+        [AIDifficulty.MEDIUM]: 600,
+        [AIDifficulty.HARD]: 1000,
+      }[aiDifficulty];
 
-    setGameState(newState);
-    setGameHistory((prev) => [...prev, newState]);
-  }, []);
+      aiMoveTimeoutRef.current = setTimeout(() => {
+        // 直接在这里执行AI移动，确保使用正确的状态
+        const aiPosition = getTicTacToeAIMove(currentState.board, aiDifficulty);
+        if (aiPosition && isValidMove(currentState.board, aiPosition)) {
+          const newBoard = makeMove(currentState.board, aiPosition, "O");
+          const winner = checkWinner(newBoard);
+          const isGameOver = winner !== null;
+
+          const newState: GameState = {
+            board: newBoard,
+            currentPlayer: "X", // AI移动后轮到玩家
+            isGameOver,
+            winner,
+          };
+
+          setGameState(newState);
+          setGameHistory((prev) => [...prev, newState]);
+        }
+
+        setIsAIThinking(false);
+        aiMoveTimeoutRef.current = null;
+      }, thinkingTime);
+    },
+    [aiDifficulty, isAIThinking]
+  );
 
   // 切换AI模式
   const toggleAIMode = useCallback(() => {
@@ -90,10 +123,21 @@ export const useTicTacToe = () => {
     resetGame();
   }, [resetGame]);
 
+  // 设置AI难度
+  const setAIDifficultyLevel = useCallback((difficulty: AIDifficulty) => {
+    setAIDifficulty(difficulty);
+  }, []);
+
   // 撤销移动
   const undoMove = useCallback(() => {
-    if (gameHistory.length <= 1) {
+    if (gameHistory.length <= 1 || isAIThinking) {
       return;
+    }
+
+    // 清除AI移动的定时器
+    if (aiMoveTimeoutRef.current) {
+      clearTimeout(aiMoveTimeoutRef.current);
+      aiMoveTimeoutRef.current = null;
     }
 
     const newHistory = gameHistory.slice(0, -1);
@@ -101,15 +145,19 @@ export const useTicTacToe = () => {
 
     setGameState(previousState);
     setGameHistory(newHistory);
-  }, [gameHistory]);
+    setIsAIThinking(false);
+  }, [gameHistory, isAIThinking]);
 
   return {
     gameState,
     isAIMode,
+    aiDifficulty,
+    isAIThinking,
     playerMove,
     resetGame,
     toggleAIMode,
+    setAIDifficultyLevel,
     undoMove,
-    canUndo: gameHistory.length > 1,
+    canUndo: gameHistory.length > 1 && !isAIThinking,
   };
 };

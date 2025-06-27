@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { CheckersGameState, Position, CheckersMove } from "../types";
+import { useState, useCallback, useRef } from "react";
+import { CheckersGameState, Position, CheckersMove, AIDifficulty } from "../types";
 import { 
   createCheckersBoard, 
   checkCheckersWinner, 
@@ -18,12 +18,23 @@ export const useCheckers = () => {
   });
 
   const [isAIMode, setIsAIMode] = useState(false);
+  const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>(AIDifficulty.MEDIUM);
   const [gameHistory, setGameHistory] = useState<CheckersGameState[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null);
   const [availableMoves, setAvailableMoves] = useState<CheckersMove[]>([]);
+  const [isAIThinking, setIsAIThinking] = useState(false);
+  
+  // 使用ref来跟踪AI移动状态，避免循环调用
+  const aiMoveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 重置游戏
   const resetGame = useCallback(() => {
+    // 清除AI移动的定时器
+    if (aiMoveTimeoutRef.current) {
+      clearTimeout(aiMoveTimeoutRef.current);
+      aiMoveTimeoutRef.current = null;
+    }
+    
     const newState: CheckersGameState = {
       board: createCheckersBoard(),
       currentPlayer: "red",
@@ -34,11 +45,12 @@ export const useCheckers = () => {
     setGameHistory([newState]);
     setSelectedPiece(null);
     setAvailableMoves([]);
+    setIsAIThinking(false);
   }, []);
 
   // 选择棋子
   const selectPiece = useCallback((position: Position) => {
-    if (gameState.isGameOver) return;
+    if (gameState.isGameOver || isAIThinking) return;
     
     const piece = gameState.board[position.row][position.col];
     
@@ -67,10 +79,10 @@ export const useCheckers = () => {
     );
     
     setAvailableMoves(moves);
-  }, [gameState]);
+  }, [gameState, isAIThinking]);
 
-  // 执行移动
-  const makeMove = useCallback((move: CheckersMove) => {
+  // 执行移动（内部函数，不直接触发AI）
+  const executeMove = useCallback((move: CheckersMove, triggerAI: boolean = true) => {
     if (gameState.isGameOver) return false;
 
     const newBoard = makeCheckersMove(gameState.board, move);
@@ -104,19 +116,45 @@ export const useCheckers = () => {
     setSelectedPiece(mustCapture || null);
     setAvailableMoves([]);
 
-    // 如果是AI模式且游戏未结束且下一个玩家是黑方，触发AI移动
-    if (isAIMode && !isGameOver && nextPlayer === "black" && !mustCapture) {
-      setTimeout(() => {
-        aiMove(newState);
-      }, 800);
+    // 只有在需要触发AI且满足条件时才触发AI移动
+    if (triggerAI && isAIMode && !isGameOver && nextPlayer === "black" && !mustCapture) {
+      scheduleAIMove(newState);
     }
 
     return true;
   }, [gameState, isAIMode]);
 
+  // 玩家移动
+  const makeMove = useCallback((move: CheckersMove) => {
+    return executeMove(move, true);
+  }, [executeMove]);
+
+  // 调度AI移动
+  const scheduleAIMove = useCallback((currentState: CheckersGameState) => {
+    if (isAIThinking || currentState.isGameOver) return;
+    
+    setIsAIThinking(true);
+    
+    // 根据难度设置思考时间
+    const thinkingTime = {
+      [AIDifficulty.EASY]: 500,
+      [AIDifficulty.MEDIUM]: 1000,
+      [AIDifficulty.HARD]: 1500,
+    }[aiDifficulty];
+
+    aiMoveTimeoutRef.current = setTimeout(() => {
+      const aiMoveResult = getCheckersAIMove(currentState.board, "black", aiDifficulty);
+      if (aiMoveResult) {
+        executeMove(aiMoveResult, false); // 不再触发新的AI移动
+      }
+      setIsAIThinking(false);
+      aiMoveTimeoutRef.current = null;
+    }, thinkingTime);
+  }, [aiDifficulty, isAIThinking, executeMove]);
+
   // 尝试移动到指定位置
   const moveTo = useCallback((position: Position) => {
-    if (!selectedPiece) return false;
+    if (!selectedPiece || isAIThinking) return false;
 
     const validMove = availableMoves.find(move => 
       move.to.row === position.row && move.to.col === position.col
@@ -127,17 +165,7 @@ export const useCheckers = () => {
     }
 
     return false;
-  }, [selectedPiece, availableMoves, makeMove]);
-
-  // AI移动
-  const aiMove = useCallback((currentState: CheckersGameState) => {
-    if (currentState.isGameOver) return;
-
-    const aiMoveResult = getCheckersAIMove(currentState.board, "black");
-    if (!aiMoveResult) return;
-
-    makeMove(aiMoveResult);
-  }, [makeMove]);
+  }, [selectedPiece, availableMoves, makeMove, isAIThinking]);
 
   // 切换AI模式
   const toggleAIMode = useCallback(() => {
@@ -145,9 +173,20 @@ export const useCheckers = () => {
     resetGame();
   }, [resetGame]);
 
+  // 设置AI难度
+  const setAIDifficultyLevel = useCallback((difficulty: AIDifficulty) => {
+    setAIDifficulty(difficulty);
+  }, []);
+
   // 撤销移动
   const undoMove = useCallback(() => {
-    if (gameHistory.length <= 1) return;
+    if (gameHistory.length <= 1 || isAIThinking) return;
+
+    // 清除AI移动的定时器
+    if (aiMoveTimeoutRef.current) {
+      clearTimeout(aiMoveTimeoutRef.current);
+      aiMoveTimeoutRef.current = null;
+    }
 
     const newHistory = gameHistory.slice(0, -1);
     const previousState = newHistory[newHistory.length - 1];
@@ -156,7 +195,8 @@ export const useCheckers = () => {
     setGameHistory(newHistory);
     setSelectedPiece(null);
     setAvailableMoves([]);
-  }, [gameHistory]);
+    setIsAIThinking(false);
+  }, [gameHistory, isAIThinking]);
 
   // 获取可移动的位置（用于高亮显示）
   const getValidMoves = useCallback(() => {
@@ -166,13 +206,16 @@ export const useCheckers = () => {
   return {
     gameState,
     isAIMode,
+    aiDifficulty,
+    isAIThinking,
     selectedPiece,
     selectPiece,
     moveTo,
     resetGame,
     toggleAIMode,
+    setAIDifficultyLevel,
     undoMove,
-    canUndo: gameHistory.length > 1,
+    canUndo: gameHistory.length > 1 && !isAIThinking,
     getValidMoves,
   };
 }; 

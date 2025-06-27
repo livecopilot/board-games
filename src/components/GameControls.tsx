@@ -16,6 +16,7 @@ interface GameControlsProps {
   winner: CellValue | 'draw';
   isGameOver: boolean;
   isAIMode: boolean;
+  isAIThinking?: boolean;
   canUndo: boolean;
   onReset: () => void;
   onUndo: () => void;
@@ -27,6 +28,7 @@ const GameControls: React.FC<GameControlsProps> = ({
   winner,
   isGameOver,
   isAIMode,
+  isAIThinking = false,
   canUndo,
   onReset,
   onUndo,
@@ -46,7 +48,7 @@ const GameControls: React.FC<GameControlsProps> = ({
       return `玩家 ${winner} 获胜！`;
     }
     
-    if (isAIMode && currentPlayer === 'O') {
+    if (isAIThinking) {
       return 'AI 思考中...';
     }
     
@@ -63,6 +65,11 @@ const GameControls: React.FC<GameControlsProps> = ({
       }
       return '#00ff88'; // 绿色
     }
+    
+    if (isAIThinking) {
+      return '#0080ff'; // 蓝色
+    }
+    
     return 'white';
   };
 
@@ -150,42 +157,98 @@ const GameControls: React.FC<GameControlsProps> = ({
             撤销
           </Text>
         </Pressable>
-
-        {/* AI模式切换按钮 */}
-        <Pressable
-          onPress={() => setShowToggleDialog(true)}
-          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
-          borderWidth={1}
-          borderColor={isAIMode ? "rgba(0, 128, 255, 0.4)" : "rgba(0, 255, 136, 0.4)"}
-          borderRadius="lg"
-          px={4}
-          py={3}
-          flex={1}
-          alignItems="center"
-          _pressed={isAIMode ? { bg: "rgba(0, 128, 255, 0.2)" } : { bg: "rgba(0, 255, 136, 0.2)" }}
-          shadow={2}
-        >
-          <Text
-            color={isAIMode ? "#0080ff" : "#00ff88"}
-            fontWeight="bold"
-            fontSize="sm"
-            fontFamily="mono"
-          >
-            {isAIMode ? 'AI模式' : '双人模式'}
-          </Text>
-        </Pressable>
       </HStack>
 
-      {/* 模式说明 */}
-      <Text
-        fontSize="xs"
-        color="rgba(255, 255, 255, 0.6)"
-        textAlign="center"
-        fontFamily="mono"
-        letterSpacing={0.5}
-      >
-        当前模式: {isAIMode ? '人机对战 (你是X，AI是O)' : '双人对战'}
-      </Text>
+      {/* 游戏模式切换器 */}
+      <VStack alignItems="center" space={3} w="100%">
+        <Text
+          fontSize="sm"
+          color="rgba(255, 255, 255, 0.8)"
+          fontFamily="mono"
+          fontWeight="bold"
+        >
+          游戏模式
+        </Text>
+        
+        {/* Toggle开关样式的模式切换 */}
+        <Pressable
+          onPress={() => setShowToggleDialog(true)}
+          bg="rgba(255, 255, 255, 0.05)"
+          borderWidth={2}
+          borderColor="rgba(0, 255, 136, 0.4)"
+          borderRadius="full"
+          w="280px"
+          h="50px"
+          position="relative"
+          shadow={4}
+          _pressed={{ bg: "rgba(255, 255, 255, 0.1)" }}
+        >
+          {/* 滑动指示器 */}
+          <Box
+            position="absolute"
+            left={isAIMode ? "4px" : "144px"}
+            top="4px"
+            w="132px"
+            h="42px"
+            bg={isAIMode ? "rgba(0, 128, 255, 0.8)" : "rgba(0, 255, 136, 0.8)"}
+            borderRadius="full"
+            shadow={6}
+          />
+          
+          {/* 模式选项 */}
+          <HStack h="100%" alignItems="center">
+            {/* AI模式选项 */}
+            <Box flex={1} alignItems="center" justifyContent="center">
+              <HStack alignItems="center" space={2}>
+                <Text fontSize="lg">🤖</Text>
+                <Text
+                  color={isAIMode ? "white" : "rgba(255, 255, 255, 0.6)"}
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  AI对战
+                </Text>
+              </HStack>
+            </Box>
+            
+            {/* 双人模式选项 */}
+            <Box flex={1} alignItems="center" justifyContent="center">
+              <HStack alignItems="center" space={2}>
+                <Text fontSize="lg">👥</Text>
+                <Text
+                  color={!isAIMode ? "black" : "rgba(255, 255, 255, 0.6)"}
+                  fontWeight="bold"
+                  fontSize="sm"
+                  fontFamily="mono"
+                >
+                  双人对战
+                </Text>
+              </HStack>
+            </Box>
+          </HStack>
+        </Pressable>
+
+        {/* 当前模式说明 */}
+        <Box
+          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
+          borderWidth={1}
+          borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(0, 255, 136, 0.3)"}
+          borderRadius="lg"
+          px={4}
+          py={2}
+        >
+          <Text
+            fontSize="xs"
+            color={isAIMode ? "#0080ff" : "#00ff88"}
+            textAlign="center"
+            fontFamily="mono"
+            letterSpacing={0.5}
+          >
+            {isAIMode ? '🤖 你是X，AI是O' : '👥 本地双人对战'}
+          </Text>
+        </Box>
+      </VStack>
 
       {/* 重新开始确认弹框 */}
       <Modal

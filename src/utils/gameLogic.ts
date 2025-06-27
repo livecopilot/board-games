@@ -1,4 +1,4 @@
-import { Board, CellValue, Position } from "../types";
+import { Board, CellValue, Position, AIDifficulty } from "../types";
 import { CheckersBoard, CheckersPiece, CheckersMove, CheckersGameState } from "../types";
 
 // 创建空棋盘
@@ -81,6 +81,116 @@ export const getAIMove = (board: Board): Position | null => {
 
   const randomIndex = Math.floor(Math.random() * availableMoves.length);
   return availableMoves[randomIndex];
+};
+
+// 井字棋智能AI（支持难度）
+export const getTicTacToeAIMove = (board: Board, difficulty: AIDifficulty = AIDifficulty.MEDIUM): Position | null => {
+  const availableMoves = getAvailableMoves(board);
+  if (availableMoves.length === 0) return null;
+
+  switch (difficulty) {
+    case AIDifficulty.EASY:
+      return getTicTacToeEasyAI(availableMoves);
+    case AIDifficulty.MEDIUM:
+      return getTicTacToeMediumAI(board, availableMoves);
+    case AIDifficulty.HARD:
+      return getTicTacToeHardAI(board, availableMoves);
+    default:
+      return getTicTacToeMediumAI(board, availableMoves);
+  }
+};
+
+// 简单AI：纯随机
+const getTicTacToeEasyAI = (availableMoves: Position[]): Position => {
+  return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+};
+
+// 中等AI：基本策略
+const getTicTacToeMediumAI = (board: Board, availableMoves: Position[]): Position => {
+  // 检查是否能获胜
+  for (const move of availableMoves) {
+    const testBoard = makeMove(board, move, "O");
+    if (checkWinner(testBoard) === "O") {
+      return move;
+    }
+  }
+
+  // 检查是否需要阻止对手获胜
+  for (const move of availableMoves) {
+    const testBoard = makeMove(board, move, "X");
+    if (checkWinner(testBoard) === "X") {
+      return move;
+    }
+  }
+
+  // 优先选择中心位置
+  const center = { row: 1, col: 1 };
+  if (availableMoves.some((move) => move.row === center.row && move.col === center.col)) {
+    return center;
+  }
+
+  // 选择角落
+  const corners = [
+    { row: 0, col: 0 },
+    { row: 0, col: 2 },
+    { row: 2, col: 0 },
+    { row: 2, col: 2 },
+  ];
+  const availableCorners = corners.filter((corner) =>
+    availableMoves.some((move) => move.row === corner.row && move.col === corner.col)
+  );
+  if (availableCorners.length > 0) {
+    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+  }
+
+  // 随机选择
+  return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+};
+
+// 困难AI：Minimax算法
+const getTicTacToeHardAI = (board: Board, availableMoves: Position[]): Position => {
+  let bestMove = availableMoves[0];
+  let bestScore = -Infinity;
+
+  for (const move of availableMoves) {
+    const newBoard = makeMove(board, move, "O");
+    const score = ticTacToeMinimax(newBoard, 0, false);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+
+  return bestMove;
+};
+
+// Minimax算法实现
+const ticTacToeMinimax = (board: Board, depth: number, isMaximizing: boolean): number => {
+  const winner = checkWinner(board);
+
+  if (winner === "O") return 10 - depth;
+  if (winner === "X") return depth - 10;
+  if (winner === "draw") return 0;
+
+  const availableMoves = getAvailableMoves(board);
+
+  if (isMaximizing) {
+    let maxEval = -Infinity;
+    for (const move of availableMoves) {
+      const newBoard = makeMove(board, move, "O");
+      const eval_ = ticTacToeMinimax(newBoard, depth + 1, false);
+      maxEval = Math.max(maxEval, eval_);
+    }
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    for (const move of availableMoves) {
+      const newBoard = makeMove(board, move, "X");
+      const eval_ = ticTacToeMinimax(newBoard, depth + 1, true);
+      minEval = Math.min(minEval, eval_);
+    }
+    return minEval;
+  }
 };
 
 // 跳棋相关函数
@@ -282,18 +392,226 @@ export const checkCheckersWinner = (
 };
 
 // 简单的跳棋AI
-export const getCheckersAIMove = (board: CheckersBoard, player: "red" | "black"): CheckersMove | null => {
+export const getCheckersAIMove = (
+  board: CheckersBoard,
+  player: "red" | "black",
+  difficulty: string = "medium"
+): CheckersMove | null => {
   const availableMoves = getCheckersAvailableMoves(board, player);
   if (availableMoves.length === 0) return null;
 
-  // 优先选择吃子移动
+  switch (difficulty) {
+    case "easy":
+      return getEasyAIMove(availableMoves);
+    case "medium":
+      return getMediumAIMove(board, availableMoves, player);
+    case "hard":
+      return getHardAIMove(board, availableMoves, player);
+    default:
+      return getMediumAIMove(board, availableMoves, player);
+  }
+};
+
+// 简单AI：随机移动，稍微偏向吃子
+const getEasyAIMove = (availableMoves: CheckersMove[]): CheckersMove => {
   const captureMoves = availableMoves.filter((move) => move.captured && move.captured.length > 0);
-  if (captureMoves.length > 0) {
+
+  // 70%概率选择吃子移动（如果有的话）
+  if (captureMoves.length > 0 && Math.random() < 0.7) {
     return captureMoves[Math.floor(Math.random() * captureMoves.length)];
   }
 
-  // 否则随机选择移动
+  // 否则随机选择
   return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+};
+
+// 中等AI：优先吃子，考虑基本策略
+const getMediumAIMove = (
+  board: CheckersBoard,
+  availableMoves: CheckersMove[],
+  player: "red" | "black"
+): CheckersMove => {
+  const captureMoves = availableMoves.filter((move) => move.captured && move.captured.length > 0);
+
+  // 总是优先选择吃子移动
+  if (captureMoves.length > 0) {
+    // 选择吃子最多的移动
+    captureMoves.sort((a, b) => (b.captured?.length || 0) - (a.captured?.length || 0));
+    return captureMoves[0];
+  }
+
+  // 没有吃子移动时，评估位置价值
+  const evaluatedMoves = availableMoves.map((move) => ({
+    move,
+    score: evaluateMove(board, move, player),
+  }));
+
+  evaluatedMoves.sort((a, b) => b.score - a.score);
+
+  // 在前3个最佳移动中随机选择，增加变化性
+  const topMoves = evaluatedMoves.slice(0, Math.min(3, evaluatedMoves.length));
+  return topMoves[Math.floor(Math.random() * topMoves.length)].move;
+};
+
+// 困难AI：使用minimax算法
+const getHardAIMove = (board: CheckersBoard, availableMoves: CheckersMove[], player: "red" | "black"): CheckersMove => {
+  const captureMoves = availableMoves.filter((move) => move.captured && move.captured.length > 0);
+
+  // 总是优先选择吃子移动
+  if (captureMoves.length > 0) {
+    // 对吃子移动也进行深度评估
+    const evaluatedCaptures = captureMoves.map((move) => ({
+      move,
+      score: minimax(board, move, 3, false, player, -Infinity, Infinity),
+    }));
+
+    evaluatedCaptures.sort((a, b) => b.score - a.score);
+    return evaluatedCaptures[0].move;
+  }
+
+  // 使用minimax算法选择最佳移动
+  let bestMove = availableMoves[0];
+  let bestScore = -Infinity;
+
+  for (const move of availableMoves) {
+    const score = minimax(board, move, 3, false, player, -Infinity, Infinity);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+
+  return bestMove;
+};
+
+// 评估移动的价值（中等难度使用）
+const evaluateMove = (board: CheckersBoard, move: CheckersMove, player: "red" | "black"): number => {
+  let score = 0;
+
+  // 基础移动得分
+  score += 1;
+
+  // 向前移动加分
+  if (player === "black" && move.to.row > move.from.row) {
+    score += 2;
+  } else if (player === "red" && move.to.row < move.from.row) {
+    score += 2;
+  }
+
+  // 靠近边缘减分（避免被困）
+  if (move.to.col === 0 || move.to.col === 7) {
+    score -= 1;
+  }
+
+  // 接近对方底线加分（准备升王）
+  const piece = board[move.from.row][move.from.col];
+  if (piece && !piece.isKing) {
+    if (player === "black" && move.to.row === 6) {
+      score += 5; // 即将升王
+    } else if (player === "red" && move.to.row === 1) {
+      score += 5; // 即将升王
+    } else if (player === "black" && move.to.row > 4) {
+      score += 2; // 向前推进
+    } else if (player === "red" && move.to.row < 3) {
+      score += 2; // 向前推进
+    }
+  }
+
+  // 王棋移动加分
+  if (piece?.isKing) {
+    score += 1;
+  }
+
+  return score;
+};
+
+// Minimax算法（困难难度使用）
+const minimax = (
+  board: CheckersBoard,
+  move: CheckersMove,
+  depth: number,
+  isMaximizing: boolean,
+  aiPlayer: "red" | "black",
+  alpha: number,
+  beta: number
+): number => {
+  if (depth === 0) {
+    return evaluateBoard(board, aiPlayer);
+  }
+
+  const newBoard = makeCheckersMove(board, move);
+  const currentPlayer = isMaximizing ? aiPlayer : aiPlayer === "red" ? "black" : "red";
+  const moves = getCheckersAvailableMoves(newBoard, currentPlayer);
+
+  if (moves.length === 0) {
+    // 无法移动，游戏结束
+    return isMaximizing ? -1000 : 1000;
+  }
+
+  if (isMaximizing) {
+    let maxEval = -Infinity;
+    for (const nextMove of moves) {
+      const eval_ = minimax(newBoard, nextMove, depth - 1, false, aiPlayer, alpha, beta);
+      maxEval = Math.max(maxEval, eval_);
+      alpha = Math.max(alpha, eval_);
+      if (beta <= alpha) break; // Alpha-beta剪枝
+    }
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    for (const nextMove of moves) {
+      const eval_ = minimax(newBoard, nextMove, depth - 1, true, aiPlayer, alpha, beta);
+      minEval = Math.min(minEval, eval_);
+      beta = Math.min(beta, eval_);
+      if (beta <= alpha) break; // Alpha-beta剪枝
+    }
+    return minEval;
+  }
+};
+
+// 评估棋盘状态（困难难度使用）
+const evaluateBoard = (board: CheckersBoard, aiPlayer: "red" | "black"): number => {
+  let score = 0;
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = board[row][col];
+      if (!piece) continue;
+
+      let pieceValue = 0;
+
+      // 基础棋子价值
+      pieceValue += piece.isKing ? 5 : 3;
+
+      // 位置价值
+      if (piece.isKing) {
+        // 王棋在中心更有价值
+        const centerDistance = Math.abs(3.5 - row) + Math.abs(3.5 - col);
+        pieceValue += (7 - centerDistance) * 0.5;
+      } else {
+        // 普通棋子向前推进有价值
+        if (piece.player === "black") {
+          pieceValue += row * 0.5; // 越往下越有价值
+        } else {
+          pieceValue += (7 - row) * 0.5; // 越往上越有价值
+        }
+      }
+
+      // 边缘惩罚
+      if (col === 0 || col === 7) {
+        pieceValue -= 0.5;
+      }
+
+      // 根据是否是AI棋子加分或减分
+      if (piece.player === aiPlayer) {
+        score += pieceValue;
+      } else {
+        score -= pieceValue;
+      }
+    }
+  }
+
+  return score;
 };
 
 // 检查是否可以继续跳跃
