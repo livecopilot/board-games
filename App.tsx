@@ -15,24 +15,62 @@ import AppNavigator from './src/navigation/AppNavigator';
 // 启用原生屏幕优化
 enableScreens();
 
-// 自定义主题
+// 科技风格主题
 const theme = extendTheme({
   colors: {
     primary: {
-      50: '#e3f2fd',
-      100: '#bbdefb',
-      200: '#90caf9',
-      300: '#64b5f6',
-      400: '#42a5f5',
-      500: '#2196f3',
-      600: '#1e88e5',
-      700: '#1976d2',
-      800: '#1565c0',
-      900: '#0d47a1',
+      50: '#e0fff4',
+      100: '#b3ffdf',
+      200: '#80ffca',
+      300: '#4dffb4',
+      400: '#1aff9e',
+      500: '#00ff88',
+      600: '#00cc6a',
+      700: '#00994d',
+      800: '#006630',
+      900: '#003319',
+    },
+    tech: {
+      50: '#f0f8ff',
+      100: '#e0f1ff',
+      200: '#b3daff',
+      300: '#80c3ff',
+      400: '#4dacff',
+      500: '#1a95ff',
+      600: '#0080ff',
+      700: '#0066cc',
+      800: '#004d99',
+      900: '#003366',
+    },
+    dark: {
+      50: '#1a1a2e',
+      100: '#16213e',
+      200: '#0f3460',
+      300: '#0e4b99',
+      400: '#2e8b57',
+      500: '#000015',
+      600: '#000011',
+      700: '#00000d',
+      800: '#000009',
+      900: '#000005',
     },
   },
   config: {
-    initialColorMode: 'light',
+    initialColorMode: 'dark',
+    useSystemColorMode: false,
+  },
+  fontConfig: {
+    mono: {
+      400: {
+        normal: 'Courier',
+      },
+      500: {
+        normal: 'Courier-Bold',
+      },
+    },
+  },
+  fonts: {
+    mono: 'mono',
   },
 });
 
@@ -43,8 +81,8 @@ function App() {
     <NativeBaseProvider theme={theme}>
       <NavigationContainer>
         <StatusBar 
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
-          backgroundColor="#2196f3"
+          barStyle="light-content" 
+          backgroundColor="#000015"
         />
         <AppNavigator />
       </NavigationContainer>

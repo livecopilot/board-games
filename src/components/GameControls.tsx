@@ -1,11 +1,14 @@
 import React from 'react';
 import {
-  View,
+  Box,
   Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+  HStack,
+  VStack,
+  Pressable,
+  Button,
+} from 'native-base';
+import { useState } from 'react';
+import Modal from 'react-native-modal';
 import { CellValue } from '../types';
 
 interface GameControlsProps {
@@ -29,6 +32,9 @@ const GameControls: React.FC<GameControlsProps> = ({
   onUndo,
   onToggleAI,
 }) => {
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showToggleDialog, setShowToggleDialog] = useState(false);
+
   const getStatusText = () => {
     if (isGameOver) {
       if (winner === 'draw') {
@@ -47,164 +53,319 @@ const GameControls: React.FC<GameControlsProps> = ({
     return `轮到玩家 ${currentPlayer}`;
   };
 
+  const getStatusColor = () => {
+    if (isGameOver) {
+      if (winner === 'draw') {
+        return '#ff8000'; // 橙色
+      }
+      if (isAIMode && winner === 'O') {
+        return '#ff0080'; // 粉色
+      }
+      return '#00ff88'; // 绿色
+    }
+    return 'white';
+  };
+
   const handleReset = () => {
-    Alert.alert(
-      '重新开始',
-      '确定要重新开始游戏吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        { text: '确定', onPress: onReset },
-      ]
-    );
+    setShowResetDialog(false);
+    onReset();
   };
 
   const handleToggleAI = () => {
-    Alert.alert(
-      isAIMode ? '关闭AI模式' : '开启AI模式',
-      isAIMode 
-        ? '切换到双人对战模式？' 
-        : '切换到人机对战模式？',
-      [
-        { text: '取消', style: 'cancel' },
-        { text: '确定', onPress: onToggleAI },
-      ]
-    );
+    setShowToggleDialog(false);
+    onToggleAI();
   };
 
   return (
-    <View style={styles.container}>
+    <VStack alignItems="center" px={5} space={5}>
       {/* 游戏状态显示 */}
-      <View style={styles.statusContainer}>
-        <Text style={[
-          styles.statusText,
-          isGameOver && styles.gameOverText,
-        ]}>
+      <Box
+        bg="rgba(255, 255, 255, 0.05)"
+        borderWidth={1}
+        borderColor="rgba(0, 255, 136, 0.3)"
+        borderRadius="lg"
+        p={4}
+        minW="200px"
+        alignItems="center"
+        shadow={3}
+      >
+        <Text
+          fontSize="lg"
+          fontWeight="bold"
+          color={getStatusColor()}
+          fontFamily="mono"
+          letterSpacing={1}
+        >
           {getStatusText()}
         </Text>
-      </View>
+      </Box>
 
       {/* 控制按钮 */}
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.resetButton]}
-          onPress={handleReset}
+      <HStack space={3} justifyContent="center" w="100%">
+        {/* 重新开始按钮 */}
+        <Pressable
+          onPress={() => setShowResetDialog(true)}
+          bg="rgba(255, 0, 128, 0.1)"
+          borderWidth={1}
+          borderColor="rgba(255, 0, 128, 0.4)"
+          borderRadius="lg"
+          px={4}
+          py={3}
+          flex={1}
+          alignItems="center"
+          _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
+          shadow={2}
         >
-          <Text style={styles.buttonText}>重新开始</Text>
-        </TouchableOpacity>
+          <Text
+            color="#ff0080"
+            fontWeight="bold"
+            fontSize="sm"
+            fontFamily="mono"
+          >
+            重新开始
+          </Text>
+        </Pressable>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.undoButton,
-            !canUndo && styles.disabledButton,
-          ]}
+        {/* 撤销按钮 */}
+        <Pressable
           onPress={onUndo}
-          disabled={!canUndo}
+          isDisabled={!canUndo}
+          bg={canUndo ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
+          borderWidth={1}
+          borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
+          borderRadius="lg"
+          px={4}
+          py={3}
+          flex={1}
+          alignItems="center"
+          _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
+          shadow={canUndo ? 2 : 0}
         >
-          <Text style={[
-            styles.buttonText,
-            !canUndo && styles.disabledButtonText,
-          ]}>
+          <Text
+            color={canUndo ? "#ff8000" : "gray.500"}
+            fontWeight="bold"
+            fontSize="sm"
+            fontFamily="mono"
+          >
             撤销
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            isAIMode ? styles.aiOnButton : styles.aiOffButton,
-          ]}
-          onPress={handleToggleAI}
+        {/* AI模式切换按钮 */}
+        <Pressable
+          onPress={() => setShowToggleDialog(true)}
+          bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
+          borderWidth={1}
+          borderColor={isAIMode ? "rgba(0, 128, 255, 0.4)" : "rgba(0, 255, 136, 0.4)"}
+          borderRadius="lg"
+          px={4}
+          py={3}
+          flex={1}
+          alignItems="center"
+          _pressed={isAIMode ? { bg: "rgba(0, 128, 255, 0.2)" } : { bg: "rgba(0, 255, 136, 0.2)" }}
+          shadow={2}
         >
-          <Text style={styles.buttonText}>
+          <Text
+            color={isAIMode ? "#0080ff" : "#00ff88"}
+            fontWeight="bold"
+            fontSize="sm"
+            fontFamily="mono"
+          >
             {isAIMode ? 'AI模式' : '双人模式'}
           </Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </HStack>
 
       {/* 模式说明 */}
-      <Text style={styles.modeText}>
+      <Text
+        fontSize="xs"
+        color="rgba(255, 255, 255, 0.6)"
+        textAlign="center"
+        fontFamily="mono"
+        letterSpacing={0.5}
+      >
         当前模式: {isAIMode ? '人机对战 (你是X，AI是O)' : '双人对战'}
       </Text>
-    </View>
+
+      {/* 重新开始确认弹框 */}
+      <Modal
+        isVisible={showResetDialog}
+        onBackdropPress={() => setShowResetDialog(false)}
+        onBackButtonPress={() => setShowResetDialog(false)}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        backdropOpacity={0.7}
+        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Box
+          bg="#000015"
+          borderColor="rgba(255, 0, 128, 0.3)"
+          borderWidth={1}
+          borderRadius="lg"
+          w="85%"
+          shadow={5}
+        >
+          {/* 头部 */}
+          <HStack
+            justifyContent="space-between"
+            alignItems="center"
+            bg="rgba(255, 0, 128, 0.1)"
+            borderTopRadius="lg"
+            borderBottomWidth={1}
+            borderBottomColor="rgba(255, 0, 128, 0.3)"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="lg" fontWeight="bold" color="#ff0080" fontFamily="mono">
+              重新开始
+            </Text>
+            <Pressable
+              onPress={() => setShowResetDialog(false)}
+              _pressed={{ bg: "rgba(255, 0, 128, 0.1)" }}
+              borderRadius="md"
+              px={2}
+              py={1}
+            >
+              <Text
+                color="#ff0080"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                关闭
+              </Text>
+            </Pressable>
+          </HStack>
+
+          {/* 内容 */}
+          <Box p={4}>
+            <Text color="white" fontSize="md" textAlign="center">
+              确定要重新开始游戏吗？当前进度将会丢失。
+            </Text>
+          </Box>
+
+          {/* 底部按钮 */}
+          <Box
+            bg="rgba(255, 0, 128, 0.05)"
+            borderBottomRadius="lg"
+            borderTopWidth={1}
+            borderTopColor="rgba(255, 0, 128, 0.2)"
+            p={4}
+          >
+            <HStack space={2}>
+              <Button
+                variant="ghost"
+                flex={1}
+                onPress={() => setShowResetDialog(false)}
+                _text={{ color: "gray.400" }}
+              >
+                取消
+              </Button>
+              <Button
+                bg="#ff0080"
+                flex={1}
+                onPress={handleReset}
+                _text={{ color: "white", fontWeight: "bold" }}
+                _pressed={{ bg: "#cc0066" }}
+              >
+                确认重新开始
+              </Button>
+            </HStack>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* AI模式切换确认弹框 */}
+      <Modal
+        isVisible={showToggleDialog}
+        onBackdropPress={() => setShowToggleDialog(false)}
+        onBackButtonPress={() => setShowToggleDialog(false)}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        backdropOpacity={0.7}
+        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Box
+          bg="#000015"
+          borderColor="rgba(0, 255, 136, 0.3)"
+          borderWidth={1}
+          borderRadius="lg"
+          w="85%"
+          shadow={5}
+        >
+          {/* 头部 */}
+          <HStack
+            justifyContent="space-between"
+            alignItems="center"
+            bg="rgba(0, 255, 136, 0.1)"
+            borderTopRadius="lg"
+            borderBottomWidth={1}
+            borderBottomColor="rgba(0, 255, 136, 0.3)"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="lg" fontWeight="bold" color="#00ff88" fontFamily="mono">
+              {isAIMode ? '关闭AI模式' : '开启AI模式'}
+            </Text>
+            <Pressable
+              onPress={() => setShowToggleDialog(false)}
+              _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
+              borderRadius="md"
+              px={2}
+              py={1}
+            >
+              <Text
+                color="#00ff88"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                关闭
+              </Text>
+            </Pressable>
+          </HStack>
+
+          {/* 内容 */}
+          <Box p={4}>
+            <Text color="white" fontSize="md" textAlign="center">
+              {isAIMode 
+                ? '切换到双人对战模式？游戏将重新开始。' 
+                : '切换到人机对战模式？游戏将重新开始。'}
+            </Text>
+          </Box>
+
+          {/* 底部按钮 */}
+          <Box
+            bg="rgba(0, 255, 136, 0.05)"
+            borderBottomRadius="lg"
+            borderTopWidth={1}
+            borderTopColor="rgba(0, 255, 136, 0.2)"
+            p={4}
+          >
+            <HStack space={2}>
+              <Button
+                variant="ghost"
+                flex={1}
+                onPress={() => setShowToggleDialog(false)}
+                _text={{ color: "gray.400" }}
+              >
+                取消
+              </Button>
+              <Button
+                bg="#00ff88"
+                flex={1}
+                onPress={handleToggleAI}
+                _text={{ color: "black", fontWeight: "bold" }}
+                _pressed={{ bg: "#00cc6a" }}
+              >
+                确认切换
+              </Button>
+            </HStack>
+          </Box>
+        </Box>
+      </Modal>
+    </VStack>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  statusContainer: {
-    marginBottom: 20,
-    padding: 15,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    minWidth: 200,
-    alignItems: 'center',
-  },
-  statusText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  gameOverText: {
-    color: '#e74c3c',
-    fontSize: 20,
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 15,
-    paddingHorizontal: 20,
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    minWidth: 80,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  resetButton: {
-    backgroundColor: '#e74c3c',
-  },
-  undoButton: {
-    backgroundColor: '#f39c12',
-  },
-  aiOnButton: {
-    backgroundColor: '#27ae60',
-  },
-  aiOffButton: {
-    backgroundColor: '#3498db',
-  },
-  disabledButton: {
-    backgroundColor: '#bdc3c7',
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  disabledButtonText: {
-    color: '#7f8c8d',
-  },
-  modeText: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-});
 
 export default GameControls; 
