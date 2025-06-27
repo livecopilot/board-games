@@ -14,6 +14,7 @@ export type RootStackParamList = {
 export type HomeScreenProps = StackScreenProps<RootStackParamList, "Home">;
 export type TicTacToeScreenProps = StackScreenProps<RootStackParamList, "TicTacToe">;
 export type CheckersScreenProps = StackScreenProps<RootStackParamList, "Checkers">;
+export type ChessScreenProps = StackScreenProps<RootStackParamList, "Chess">;
 
 // 声明全局导航类型
 declare global {

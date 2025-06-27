@@ -619,3 +619,526 @@ export const canContinueCapture = (board: CheckersBoard, position: Position): bo
   const moves = getPieceMoves(board, position, true);
   return moves.some((move) => move.captured && move.captured.length > 0);
 };
+
+// 中国象棋相关函数
+import { ChessBoard, ChessPiece, ChessMove, ChessGameState, ChessPieceType } from "../types";
+
+// 创建中国象棋初始棋盘
+export const createChessBoard = (): ChessBoard => {
+  const board: ChessBoard = Array(10)
+    .fill(null)
+    .map(() => Array(9).fill(null));
+
+  // 放置黑方棋子 (顶部)
+  board[0][0] = { type: "rook", player: "black" };
+  board[0][1] = { type: "horse", player: "black" };
+  board[0][2] = { type: "elephant", player: "black" };
+  board[0][3] = { type: "advisor", player: "black" };
+  board[0][4] = { type: "king", player: "black" };
+  board[0][5] = { type: "advisor", player: "black" };
+  board[0][6] = { type: "elephant", player: "black" };
+  board[0][7] = { type: "horse", player: "black" };
+  board[0][8] = { type: "rook", player: "black" };
+
+  board[2][1] = { type: "cannon", player: "black" };
+  board[2][7] = { type: "cannon", player: "black" };
+
+  for (let i = 0; i < 9; i += 2) {
+    board[3][i] = { type: "pawn", player: "black" };
+  }
+
+  // 放置红方棋子 (底部)
+  board[9][0] = { type: "rook", player: "red" };
+  board[9][1] = { type: "horse", player: "red" };
+  board[9][2] = { type: "elephant", player: "red" };
+  board[9][3] = { type: "advisor", player: "red" };
+  board[9][4] = { type: "king", player: "red" };
+  board[9][5] = { type: "advisor", player: "red" };
+  board[9][6] = { type: "elephant", player: "red" };
+  board[9][7] = { type: "horse", player: "red" };
+  board[9][8] = { type: "rook", player: "red" };
+
+  board[7][1] = { type: "cannon", player: "red" };
+  board[7][7] = { type: "cannon", player: "red" };
+
+  for (let i = 0; i < 9; i += 2) {
+    board[6][i] = { type: "pawn", player: "red" };
+  }
+
+  return board;
+};
+
+// 检查位置是否在棋盘内
+const isChessInBounds = (row: number, col: number): boolean => {
+  return row >= 0 && row < 10 && col >= 0 && col < 9;
+};
+
+// 检查是否在九宫格内
+const isInPalace = (row: number, col: number, player: "red" | "black"): boolean => {
+  if (player === "red") {
+    return row >= 7 && row <= 9 && col >= 3 && col <= 5;
+  } else {
+    return row >= 0 && row <= 2 && col >= 3 && col <= 5;
+  }
+};
+
+// 检查是否过河
+const hasCrossedRiver = (row: number, player: "red" | "black"): boolean => {
+  if (player === "red") {
+    return row <= 4; // 红方过河是到达0-4行
+  } else {
+    return row >= 5; // 黑方过河是到达5-9行
+  }
+};
+
+// 获取单个棋子的可能移动
+export const getChessPieceMoves = (board: ChessBoard, position: Position, piece: ChessPiece): ChessMove[] => {
+  if (!piece) return [];
+
+  const moves: ChessMove[] = [];
+  const { row, col } = position;
+
+  // 定义直线移动方向（车和炮都会用到）
+  const rookDirections = [
+    { row: -1, col: 0 },
+    { row: 1, col: 0 },
+    { row: 0, col: -1 },
+    { row: 0, col: 1 },
+  ];
+
+  switch (piece.type) {
+    case "king": // 帅/将
+      // 只能在九宫格内移动，一次只能走一格
+      const kingMoves = [
+        { row: row - 1, col },
+        { row: row + 1, col },
+        { row, col: col - 1 },
+        { row, col: col + 1 },
+      ];
+
+      for (const move of kingMoves) {
+        if (isChessInBounds(move.row, move.col) && isInPalace(move.row, move.col, piece.player)) {
+          const target = board[move.row][move.col];
+          if (!target || target.player !== piece.player) {
+            moves.push({
+              from: position,
+              to: move,
+              captured: target || undefined,
+            });
+          }
+        }
+      }
+      break;
+
+    case "advisor": // 士
+      // 只能在九宫格内斜向移动
+      const advisorMoves = [
+        { row: row - 1, col: col - 1 },
+        { row: row - 1, col: col + 1 },
+        { row: row + 1, col: col - 1 },
+        { row: row + 1, col: col + 1 },
+      ];
+
+      for (const move of advisorMoves) {
+        if (isChessInBounds(move.row, move.col) && isInPalace(move.row, move.col, piece.player)) {
+          const target = board[move.row][move.col];
+          if (!target || target.player !== piece.player) {
+            moves.push({
+              from: position,
+              to: move,
+              captured: target || undefined,
+            });
+          }
+        }
+      }
+      break;
+
+    case "elephant": // 相/象
+      // 斜向移动两格，不能过河，不能被拦
+      const elephantMoves = [
+        { row: row - 2, col: col - 2, block: { row: row - 1, col: col - 1 } },
+        { row: row - 2, col: col + 2, block: { row: row - 1, col: col + 1 } },
+        { row: row + 2, col: col - 2, block: { row: row + 1, col: col - 1 } },
+        { row: row + 2, col: col + 2, block: { row: row + 1, col: col + 1 } },
+      ];
+
+      for (const move of elephantMoves) {
+        if (
+          isChessInBounds(move.row, move.col) &&
+          !hasCrossedRiver(move.row, piece.player) &&
+          !board[move.block.row][move.block.col]
+        ) {
+          const target = board[move.row][move.col];
+          if (!target || target.player !== piece.player) {
+            moves.push({
+              from: position,
+              to: { row: move.row, col: move.col },
+              captured: target || undefined,
+            });
+          }
+        }
+      }
+      break;
+
+    case "horse": // 马
+      // 走日字，不能被拦马腿
+      const horseMoves = [
+        { row: row - 2, col: col - 1, block: { row: row - 1, col } },
+        { row: row - 2, col: col + 1, block: { row: row - 1, col } },
+        { row: row - 1, col: col - 2, block: { row, col: col - 1 } },
+        { row: row - 1, col: col + 2, block: { row, col: col + 1 } },
+        { row: row + 1, col: col - 2, block: { row, col: col - 1 } },
+        { row: row + 1, col: col + 2, block: { row, col: col + 1 } },
+        { row: row + 2, col: col - 1, block: { row: row + 1, col } },
+        { row: row + 2, col: col + 1, block: { row: row + 1, col } },
+      ];
+
+      for (const move of horseMoves) {
+        if (isChessInBounds(move.row, move.col) && !board[move.block.row][move.block.col]) {
+          const target = board[move.row][move.col];
+          if (!target || target.player !== piece.player) {
+            moves.push({
+              from: position,
+              to: { row: move.row, col: move.col },
+              captured: target || undefined,
+            });
+          }
+        }
+      }
+      break;
+
+    case "rook": // 车
+      // 直线移动，不能跳过棋子
+
+      for (const dir of rookDirections) {
+        for (let i = 1; i < 10; i++) {
+          const newRow = row + dir.row * i;
+          const newCol = col + dir.col * i;
+
+          if (!isChessInBounds(newRow, newCol)) break;
+
+          const target = board[newRow][newCol];
+          if (target) {
+            if (target.player !== piece.player) {
+              moves.push({
+                from: position,
+                to: { row: newRow, col: newCol },
+                captured: target,
+              });
+            }
+            break;
+          } else {
+            moves.push({
+              from: position,
+              to: { row: newRow, col: newCol },
+            });
+          }
+        }
+      }
+      break;
+
+    case "cannon": // 炮
+      // 直线移动，吃子时需要跳过一个棋子
+      for (const dir of rookDirections) {
+        let hasJumped = false;
+
+        for (let i = 1; i < 10; i++) {
+          const newRow = row + dir.row * i;
+          const newCol = col + dir.col * i;
+
+          if (!isChessInBounds(newRow, newCol)) break;
+
+          const target = board[newRow][newCol];
+          if (target) {
+            if (!hasJumped) {
+              hasJumped = true; // 第一次遇到棋子，作为炮架
+            } else {
+              // 第二次遇到棋子，可以吃子
+              if (target.player !== piece.player) {
+                moves.push({
+                  from: position,
+                  to: { row: newRow, col: newCol },
+                  captured: target,
+                });
+              }
+              break;
+            }
+          } else if (!hasJumped) {
+            // 没有炮架时可以移动到空位
+            moves.push({
+              from: position,
+              to: { row: newRow, col: newCol },
+            });
+          }
+        }
+      }
+      break;
+
+    case "pawn": // 兵/卒
+      const direction = piece.player === "red" ? -1 : 1;
+      const pawnMoves = [];
+
+      // 向前移动
+      pawnMoves.push({ row: row + direction, col });
+
+      // 如果已过河，可以左右移动
+      if (hasCrossedRiver(row, piece.player)) {
+        pawnMoves.push({ row, col: col - 1 });
+        pawnMoves.push({ row, col: col + 1 });
+      }
+
+      for (const move of pawnMoves) {
+        if (isChessInBounds(move.row, move.col)) {
+          const target = board[move.row][move.col];
+          if (!target || target.player !== piece.player) {
+            moves.push({
+              from: position,
+              to: move,
+              captured: target || undefined,
+            });
+          }
+        }
+      }
+      break;
+  }
+
+  return moves;
+};
+
+// 获取所有可能的移动
+export const getChessAvailableMoves = (board: ChessBoard, player: "red" | "black"): ChessMove[] => {
+  const moves: ChessMove[] = [];
+
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 9; col++) {
+      const piece = board[row][col];
+      if (piece && piece.player === player) {
+        const pieceMoves = getChessPieceMoves(board, { row, col }, piece);
+        moves.push(...pieceMoves);
+      }
+    }
+  }
+
+  return moves;
+};
+
+// 执行象棋移动
+export const makeChessMove = (board: ChessBoard, move: ChessMove): ChessBoard => {
+  const newBoard = board.map((row) => [...row]);
+
+  newBoard[move.to.row][move.to.col] = newBoard[move.from.row][move.from.col];
+  newBoard[move.from.row][move.from.col] = null;
+
+  return newBoard;
+};
+
+// 检查是否被将军
+export const isInCheck = (board: ChessBoard, player: "red" | "black"): boolean => {
+  // 找到己方的帅/将
+  let kingPos: Position | null = null;
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 9; col++) {
+      const piece = board[row][col];
+      if (piece && piece.type === "king" && piece.player === player) {
+        kingPos = { row, col };
+        break;
+      }
+    }
+    if (kingPos) break;
+  }
+
+  if (!kingPos) return false;
+
+  // 检查对方所有棋子是否能攻击到帅/将
+  const opponent = player === "red" ? "black" : "red";
+  const opponentMoves = getChessAvailableMoves(board, opponent);
+
+  return opponentMoves.some((move) => move.to.row === kingPos!.row && move.to.col === kingPos!.col);
+};
+
+// 检查是否将死
+export const isCheckmate = (board: ChessBoard, player: "red" | "black"): boolean => {
+  if (!isInCheck(board, player)) return false;
+
+  const moves = getChessAvailableMoves(board, player);
+
+  // 尝试每一个可能的移动，看是否能解除将军
+  for (const move of moves) {
+    const newBoard = makeChessMove(board, move);
+    if (!isInCheck(newBoard, player)) {
+      return false; // 找到一个移动可以解除将军
+    }
+  }
+
+  return true; // 所有移动都无法解除将军
+};
+
+// 检查象棋胜利条件
+export const checkChessWinner = (
+  board: ChessBoard,
+  currentPlayer: "red" | "black"
+): "red" | "black" | "draw" | null => {
+  // 首先检查双方是否还有帅/将
+  let redKingExists = false;
+  let blackKingExists = false;
+
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 9; col++) {
+      const piece = board[row][col];
+      if (piece && piece.type === "king") {
+        if (piece.player === "red") {
+          redKingExists = true;
+        } else {
+          blackKingExists = true;
+        }
+      }
+    }
+  }
+
+  // 如果任何一方的帅/将被吃掉，游戏结束
+  if (!redKingExists) {
+    return "black"; // 红方帅被吃，黑方胜利
+  }
+  if (!blackKingExists) {
+    return "red"; // 黑方将被吃，红方胜利
+  }
+
+  // 检查是否将死
+  if (isCheckmate(board, currentPlayer)) {
+    return currentPlayer === "red" ? "black" : "red";
+  }
+
+  // 检查是否无子可动 (困毙)
+  const moves = getChessAvailableMoves(board, currentPlayer);
+  if (moves.length === 0) {
+    return currentPlayer === "red" ? "black" : "red";
+  }
+
+  return null;
+};
+
+// 简单的象棋AI
+export const getChessAIMove = (
+  board: ChessBoard,
+  player: "red" | "black",
+  difficulty: AIDifficulty = AIDifficulty.MEDIUM
+): ChessMove | null => {
+  const availableMoves = getChessAvailableMoves(board, player);
+  if (availableMoves.length === 0) return null;
+
+  switch (difficulty) {
+    case AIDifficulty.EASY:
+      return getChessEasyAI(availableMoves);
+    case AIDifficulty.MEDIUM:
+      return getChessMediumAI(board, availableMoves, player);
+    case AIDifficulty.HARD:
+      return getChessHardAI(board, availableMoves, player);
+    default:
+      return getChessMediumAI(board, availableMoves, player);
+  }
+};
+
+// 简单AI：随机移动，优先吃子
+const getChessEasyAI = (availableMoves: ChessMove[]): ChessMove => {
+  const captureMoves = availableMoves.filter((move) => move.captured);
+
+  if (captureMoves.length > 0 && Math.random() < 0.7) {
+    return captureMoves[Math.floor(Math.random() * captureMoves.length)];
+  }
+
+  return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+};
+
+// 中等AI：基本策略
+const getChessMediumAI = (board: ChessBoard, availableMoves: ChessMove[], player: "red" | "black"): ChessMove => {
+  // 总是优先吃子
+  const captureMoves = availableMoves.filter((move) => move.captured);
+  if (captureMoves.length > 0) {
+    return captureMoves[Math.floor(Math.random() * captureMoves.length)];
+  }
+
+  // 评估位置价值
+  const evaluatedMoves = availableMoves.map((move) => ({
+    move,
+    score: evaluateChessMove(board, move, player),
+  }));
+
+  evaluatedMoves.sort((a, b) => b.score - a.score);
+
+  // 在前3个最佳移动中随机选择
+  const topMoves = evaluatedMoves.slice(0, Math.min(3, evaluatedMoves.length));
+  return topMoves[Math.floor(Math.random() * topMoves.length)].move;
+};
+
+// 困难AI：基础minimax
+const getChessHardAI = (board: ChessBoard, availableMoves: ChessMove[], player: "red" | "black"): ChessMove => {
+  let bestMove = availableMoves[0];
+  let bestScore = -Infinity;
+
+  for (const move of availableMoves) {
+    const newBoard = makeChessMove(board, move);
+    const score = evaluateChessBoard(newBoard, player);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+
+  return bestMove;
+};
+
+// 评估象棋移动价值
+const evaluateChessMove = (board: ChessBoard, move: ChessMove, player: "red" | "black"): number => {
+  let score = 0;
+
+  // 吃子价值
+  if (move.captured) {
+    const pieceValues = {
+      king: 1000,
+      rook: 9,
+      cannon: 4,
+      horse: 4,
+      elephant: 2,
+      advisor: 2,
+      pawn: 1,
+    };
+    score += pieceValues[move.captured.type] * 10;
+  }
+
+  // 中心控制价值
+  const centerDistance = Math.abs(4 - move.to.row) + Math.abs(4 - move.to.col);
+  score += (8 - centerDistance) * 0.5;
+
+  return score;
+};
+
+// 评估象棋棋盘
+const evaluateChessBoard = (board: ChessBoard, player: "red" | "black"): number => {
+  let score = 0;
+
+  const pieceValues = {
+    king: 1000,
+    rook: 9,
+    cannon: 4,
+    horse: 4,
+    elephant: 2,
+    advisor: 2,
+    pawn: 1,
+  };
+
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 9; col++) {
+      const piece = board[row][col];
+      if (piece) {
+        const value = pieceValues[piece.type];
+        if (piece.player === player) {
+          score += value;
+        } else {
+          score -= value;
+        }
+      }
+    }
+  }
+
+  return score;
+};

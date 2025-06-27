@@ -51,8 +51,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       id: 'chess',
       title: '象棋',
       icon: '♟️',
-      available: false,
-      color: '#0080ff',
+      available: true,
+      color: '#ffd700',
     },
     {
       id: 'gomoku',
@@ -219,14 +219,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           {games.map(renderGameCard)}
         </VStack>
 
-        {/* 底部装饰 */}
-        <Box mt={12} alignItems="center">
-          <HStack space={2} alignItems="center">
-            <Box w={2} h={2} borderRadius="full" bg="#00ff88" />
-            <Box w={1} h={1} borderRadius="full" bg="gray.600" />
-            <Box w={1} h={1} borderRadius="full" bg="gray.600" />
-          </HStack>
-        </Box>
       </ScrollView>
     </Box>
   );

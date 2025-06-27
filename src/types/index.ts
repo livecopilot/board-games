@@ -76,3 +76,36 @@ export interface CheckersGameState {
   mustCapture?: Position; // 强制连续跳跃的位置
   lastMove?: CheckersMove;
 }
+
+// 中国象棋相关类型
+export type ChessPieceType =
+  | "king" // 帅/将
+  | "advisor" // 士
+  | "elephant" // 相/象
+  | "horse" // 马
+  | "rook" // 车
+  | "cannon" // 炮
+  | "pawn"; // 兵/卒
+
+export type ChessPiece = {
+  type: ChessPieceType;
+  player: "red" | "black";
+} | null;
+
+export type ChessBoard = ChessPiece[][];
+
+export interface ChessMove {
+  from: Position;
+  to: Position;
+  captured?: ChessPiece;
+}
+
+export interface ChessGameState {
+  board: ChessBoard;
+  currentPlayer: "red" | "black";
+  isGameOver: boolean;
+  winner: "red" | "black" | "draw" | null;
+  isInCheck?: boolean; // 是否被将军
+  lastMove?: ChessMove;
+  moveHistory: ChessMove[];
+}
