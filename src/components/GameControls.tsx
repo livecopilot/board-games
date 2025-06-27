@@ -106,6 +106,18 @@ const GameControls: React.FC<GameControlsProps> = ({
         >
           {getStatusText()}
         </Text>
+        
+        {!isGameOver && (
+          <Text
+            fontSize="xs"
+            color={isAIMode ? "#0080ff" : "#00ff88"}
+            fontFamily="mono"
+            textAlign="center"
+            mt={2}
+          >
+            {isAIMode ? '你是X，AI是O' : '本地双人对战'}
+          </Text>
+        )}
       </Box>
 
       {/* 控制按钮 */}
@@ -185,26 +197,7 @@ const GameControls: React.FC<GameControlsProps> = ({
         </Pressable>
       </HStack>
 
-      {/* 当前模式说明 */}
-      <Box
-        bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(0, 255, 136, 0.1)"}
-        borderWidth={1}
-        borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(0, 255, 136, 0.3)"}
-        borderRadius="lg"
-        px={4}
-        py={2}
-        w="100%"
-      >
-        <Text
-          fontSize="xs"
-          color={isAIMode ? "#0080ff" : "#00ff88"}
-          textAlign="center"
-          fontFamily="mono"
-          letterSpacing={0.5}
-        >
-          {isAIMode ? '你是X，AI是O' : '本地双人对战'}
-        </Text>
-      </Box>
+
 
       {/* 重新开始确认弹框 */}
       <Modal

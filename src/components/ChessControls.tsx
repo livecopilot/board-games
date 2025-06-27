@@ -121,24 +121,34 @@ const ChessControls: React.FC<ChessControlsProps> = ({
 
         {/* 当前玩家指示器 */}
         {!isGameOver && !isAIThinking && (
-          <HStack alignItems="center" mt={2} space={2}>
-            <Box
-              w="16px"
-              h="16px"
-              borderRadius="full"
-              bg={currentPlayer === 'red' ? '#ff3030' : '#303030'}
-              borderWidth={2}
-              borderColor={currentPlayer === 'red' ? '#ff6060' : '#606060'}
-              shadow={3}
-            />
+          <VStack alignItems="center" mt={2} space={1}>
+            <HStack alignItems="center" space={2}>
+              <Box
+                w="16px"
+                h="16px"
+                borderRadius="full"
+                bg={currentPlayer === 'red' ? '#ff3030' : '#303030'}
+                borderWidth={2}
+                borderColor={currentPlayer === 'red' ? '#ff6060' : '#606060'}
+                shadow={3}
+              />
+              <Text
+                fontSize="sm"
+                color="rgba(255, 255, 255, 0.8)"
+                fontFamily="mono"
+              >
+                {getPlayerText(currentPlayer)}回合
+              </Text>
+            </HStack>
             <Text
-              fontSize="sm"
-              color="rgba(255, 255, 255, 0.8)"
+              fontSize="xs"
+              color="rgba(255, 215, 0, 0.7)"
               fontFamily="mono"
+              textAlign="center"
             >
-              {getPlayerText(currentPlayer)}回合
+              {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
             </Text>
-          </HStack>
+          </VStack>
         )}
 
         {/* AI思考指示器 */}
@@ -241,26 +251,7 @@ const ChessControls: React.FC<ChessControlsProps> = ({
         </Pressable>
       </HStack>
 
-      {/* 当前模式说明 */}
-      <Box
-        bg="rgba(255, 215, 0, 0.1)"
-        borderWidth={1}
-        borderColor="rgba(255, 215, 0, 0.3)"
-        borderRadius="lg"
-        px={4}
-        py={2}
-        w="100%"
-      >
-        <Text
-          fontSize="xs"
-          color="rgba(255, 215, 0, 0.9)"
-          textAlign="center"
-          fontFamily="mono"
-          letterSpacing={0.5}
-        >
-          {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
-        </Text>
-      </Box>
+
 
       {/* 将军提示 */}
       {isInCheck && !isGameOver && (

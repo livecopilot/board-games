@@ -118,24 +118,34 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
 
         {/* 当前玩家指示器 */}
         {!isGameOver && !isAIThinking && (
-          <HStack alignItems="center" mt={2} space={2}>
-            <Box
-              w="16px"
-              h="16px"
-              borderRadius="full"
-              bg={currentPlayer === 'red' ? '#ff3030' : '#303030'}
-              borderWidth={2}
-              borderColor={currentPlayer === 'red' ? '#ff6060' : '#606060'}
-              shadow={3}
-            />
+          <VStack alignItems="center" mt={2} space={1}>
+            <HStack alignItems="center" space={2}>
+              <Box
+                w="16px"
+                h="16px"
+                borderRadius="full"
+                bg={currentPlayer === 'red' ? '#ff3030' : '#303030'}
+                borderWidth={2}
+                borderColor={currentPlayer === 'red' ? '#ff6060' : '#606060'}
+                shadow={3}
+              />
+              <Text
+                fontSize="sm"
+                color="rgba(255, 255, 255, 0.8)"
+                fontFamily="mono"
+              >
+                {currentPlayer === 'red' ? '红方回合' : '黑方回合'}
+              </Text>
+            </HStack>
             <Text
-              fontSize="sm"
-              color="rgba(255, 255, 255, 0.8)"
+              fontSize="xs"
+              color={isAIMode ? "#0080ff" : "#ff0080"}
               fontFamily="mono"
+              textAlign="center"
             >
-              {currentPlayer === 'red' ? '红方回合' : '黑方回合'}
+              {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
             </Text>
-          </HStack>
+          </VStack>
         )}
 
         {/* AI思考指示器 */}
@@ -238,26 +248,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
         </Pressable>
       </HStack>
 
-      {/* 当前模式说明 */}
-      <Box
-        bg={isAIMode ? "rgba(0, 128, 255, 0.1)" : "rgba(255, 0, 128, 0.1)"}
-        borderWidth={1}
-        borderColor={isAIMode ? "rgba(0, 128, 255, 0.3)" : "rgba(255, 0, 128, 0.3)"}
-        borderRadius="lg"
-        px={4}
-        py={2}
-        w="100%"
-      >
-        <Text
-          fontSize="xs"
-          color={isAIMode ? "#0080ff" : "#ff0080"}
-          textAlign="center"
-          fontFamily="mono"
-          letterSpacing={0.5}
-        >
-          {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
-        </Text>
-      </Box>
+
 
       {/* 游戏提示 */}
       {mustCapture && (
