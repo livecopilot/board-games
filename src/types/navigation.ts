@@ -13,6 +13,7 @@ export type RootStackParamList = {
 // 定义屏幕组件的props类型
 export type HomeScreenProps = StackScreenProps<RootStackParamList, "Home">;
 export type TicTacToeScreenProps = StackScreenProps<RootStackParamList, "TicTacToe">;
+export type CheckersScreenProps = StackScreenProps<RootStackParamList, "Checkers">;
 
 // 声明全局导航类型
 declare global {

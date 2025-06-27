@@ -44,7 +44,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       id: 'checkers',
       title: '跳棋',
       icon: '🔴',
-      available: false,
+      available: true,
       color: '#ff0080',
     },
     {
