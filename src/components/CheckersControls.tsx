@@ -51,23 +51,32 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   const getStatusText = () => {
     if (isGameOver) {
       if (winner === 'draw') {
-        return '平局！';
+        return '🤝 平局！';
       }
-      if (isAIMode && winner === 'black') {
-        return 'AI 获胜！';
+      if (isAIMode) {
+        return winner === 'red' ? '🎉 你获胜了！' : '😔 AI获胜';
+      } else {
+        return winner === 'red' ? '🎉 红方获胜！' : '🎉 黑方获胜！';
       }
-      return `${winner === 'red' ? '红方' : '黑方'} 获胜！`;
     }
     
     if (isAIThinking) {
-      return 'AI 思考中...';
+      return '🤖 AI思考中...';
     }
 
     if (mustCapture) {
-      return `${currentPlayer === 'red' ? '红方' : '黑方'} 必须继续跳跃！`;
+      if (isAIMode) {
+        return currentPlayer === 'red' ? '⚡ 你必须继续跳跃！' : '⚡ AI必须继续跳跃';
+      } else {
+        return currentPlayer === 'red' ? '⚡ 红方必须继续跳跃！' : '⚡ 黑方必须继续跳跃！';
+      }
     }
     
-    return `轮到 ${currentPlayer === 'red' ? '红方' : '黑方'}`;
+    if (isAIMode) {
+      return currentPlayer === 'red' ? '🎯 轮到你了！' : '⏳ 等待AI...';
+    } else {
+      return currentPlayer === 'red' ? '🎯 轮到红方！' : '🎯 轮到黑方！';
+    }
   };
 
   const getStatusColor = () => {
@@ -143,10 +152,12 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
                   />
                   <Text
                     fontSize="sm"
-                    color="rgba(255, 255, 255, 0.8)"
+                    color={currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
                     fontFamily="mono"
                   >
-                    {currentPlayer === 'red' ? '红方回合' : '黑方回合'}
+                    {isAIMode 
+                      ? '红方（你）' 
+                      : '红方（我方）'}
                   </Text>
                 </HStack>
                 <Text
@@ -155,8 +166,19 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
                   fontFamily="mono"
                   textAlign="center"
                 >
-                  {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
+                  {isAIMode ? '人机对战模式' : '本地双人对战'}
                 </Text>
+                
+                {mustCapture && currentPlayer === 'red' && (
+                  <Text
+                    fontSize="xs"
+                    color="#ff8000"
+                    fontFamily="mono"
+                    textAlign="center"
+                  >
+                    ⚡ 必须继续跳跃吃子
+                  </Text>
+                )}
               </VStack>
             )}
 

@@ -16,6 +16,7 @@ import { useTicTacToe } from '../hooks/useTicTacToe';
 import { AIDifficulty } from '../types';
 import type { TicTacToeScreenProps } from '../types/navigation';
 import IconFont from 'react-native-vector-icons/Ionicons';
+import { View } from 'react-native';
 
 const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   const {
@@ -192,6 +193,160 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
       >
         {/* 游戏棋盘 */}
         <Box alignItems="center" mb={5}>
+          {/* 对方控制器（双人模式下显示） */}
+          {!isAIMode && (
+            <View style={{ marginBottom: 20, transform: [{ rotate: '180deg' }] }}>
+              <HStack alignItems="flex-start" px={5} space={4} w="100%">
+                {/* 对方左侧：游戏状态显示 */}
+                <VStack flex={1} space={3} minH="120px" justifyContent="flex-start">
+                  <Box
+                    bg="rgba(255, 255, 255, 0.05)"
+                    borderWidth={1}
+                    borderColor="rgba(0, 255, 136, 0.3)"
+                    borderRadius="lg"
+                    p={4}
+                    w="100%"
+                    alignItems="center"
+                    shadow={3}
+                    mt={3}
+                  >
+                    {/* 游戏状态显示 */}
+                    {gameState.isGameOver ? (
+                      <VStack alignItems="center" space={2}>
+                        <Text
+                          fontSize="xl"
+                          fontWeight="bold"
+                          color={gameState.winner === 'O' ? '#00ff88' : gameState.winner === 'X' ? '#ff3030' : '#ffd700'}
+                          fontFamily="mono"
+                          letterSpacing={1}
+                        >
+                          {gameState.winner === 'O' ? '🎉 玩家O获胜！' : 
+                           gameState.winner === 'X' ? '对方获胜' : 
+                           '🤝 平局'}
+                        </Text>
+                        <Text
+                          fontSize="sm"
+                          color="rgba(255, 255, 255, 0.7)"
+                          fontFamily="mono"
+                          textAlign="center"
+                        >
+                          {gameState.winner === 'O' ? '恭喜你赢得了比赛！' : 
+                           gameState.winner === 'X' ? '很遗憾，你输了' : 
+                           '势均力敌，不分胜负'}
+                        </Text>
+                      </VStack>
+                    ) : (
+                      <VStack alignItems="center" space={2}>
+                        <Text
+                          fontSize="lg"
+                          fontWeight="bold"
+                          color={gameState.currentPlayer === 'O' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
+                          fontFamily="mono"
+                          letterSpacing={1}
+                        >
+                          {gameState.currentPlayer === 'O' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
+                        </Text>
+                        
+                        <VStack alignItems="center" space={1}>
+                          <HStack alignItems="center" space={2}>
+                            <Text
+                              fontSize="lg"
+                              fontWeight="bold"
+                              color={gameState.currentPlayer === 'O' ? '#ff0080' : 'rgba(255, 0, 128, 0.6)'}
+                            >
+                              O
+                            </Text>
+                            <Text
+                              fontSize="sm"
+                              color={gameState.currentPlayer === 'O' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                              fontFamily="mono"
+                            >
+                              玩家 O（对方）
+                            </Text>
+                          </HStack>
+                          <Text
+                            fontSize="xs"
+                            color="#00ff88"
+                            fontFamily="mono"
+                            textAlign="center"
+                          >
+                            本地双人对战
+                          </Text>
+                        </VStack>
+                      </VStack>
+                    )}
+                  </Box>
+                </VStack>
+
+                {/* 对方右侧：简化控制按钮 */}
+                <Box flex={1} mt={3} minH="120px">
+                  <HStack space={2} flexWrap="wrap" alignItems="flex-start">
+                                         {/* 重新开始按钮 */}
+                     <Pressable
+                       onPress={resetGame}
+                      bg="rgba(255, 0, 128, 0.1)"
+                      borderWidth={1}
+                      borderColor="rgba(255, 0, 128, 0.4)"
+                      borderRadius="lg"
+                      px={3}
+                      py={3}
+                      minW="30%"
+                      maxW="48%"
+                      flex={1}
+                      mb={2}
+                      alignItems="center"
+                      _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
+                      shadow={2}
+                    >
+                      <HStack alignItems="center" space={1}>
+                        <IconFont name="refresh" size={14} color="#ff0080" />
+                        <Text
+                          color="#ff0080"
+                          fontWeight="bold"
+                          fontSize="sm"
+                          fontFamily="mono"
+                        >
+                          重新开始
+                        </Text>
+                      </HStack>
+                    </Pressable>
+
+                    {/* 撤销按钮 */}
+                    <Pressable
+                      onPress={undoMove}
+                      isDisabled={!canUndo}
+                      bg={canUndo ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
+                      borderWidth={1}
+                      borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
+                      borderRadius="lg"
+                      px={3}
+                      py={3}
+                      minW="30%"
+                      maxW="48%"
+                      flex={1}
+                      mb={2}
+                      alignItems="center"
+                      _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
+                      shadow={canUndo ? 2 : 0}
+                    >
+                      <HStack alignItems="center" space={1}>
+                        <IconFont name="arrow-undo" size={14} color={canUndo ? "#ff8000" : "gray.500"} />
+                        <Text
+                          color={canUndo ? "#ff8000" : "gray.500"}
+                          fontWeight="bold"
+                          fontSize="sm"
+                          fontFamily="mono"
+                        >
+                          撤销
+                        </Text>
+                      </HStack>
+                    </Pressable>
+                  </HStack>
+                </Box>
+              </HStack>
+            </View>
+          )}
+
           <TicTacToeBoard
             board={gameState.board}
             onCellPress={playerMove}
@@ -505,7 +660,6 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           </Box>
         </Box>
       </Modal>
-
 
     </Box>
   );

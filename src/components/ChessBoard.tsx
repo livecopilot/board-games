@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Pressable, Text } from 'native-base';
 import { Dimensions } from 'react-native';
 import Svg, { Line, G } from 'react-native-svg';
-import { ChessBoard as ChessBoardType, Position, ChessPiece } from '../types';
+import { ChessBoard as ChessBoardType, Position, ChessPiece, ChessMove } from '../types';
 
 interface ChessBoardProps {
   board: ChessBoardType;
@@ -10,6 +10,8 @@ interface ChessBoardProps {
   selectedPiece?: Position | null;
   validMoves?: Position[];
   disabled?: boolean;
+  lastMove?: ChessMove | null;
+  isAIMode?: boolean;
 }
 
 // 动态计算棋盘尺寸
@@ -54,8 +56,8 @@ const ChessBoardLines = () => {
   // 兵、卒和炮位置的标记点
   const renderPositionMarkers = () => {
     const markers: React.ReactElement[] = [];
-    const markerSize = 3;
-    const markerOffset = CELL_SIZE * 0.15;
+    const markerSize = 10;
+    const markerOffset = CELL_SIZE * 0.08;
     
     // 兵位置 (红方，行6)
     const pawnPositions = [0, 2, 4, 6, 8];
@@ -63,23 +65,21 @@ const ChessBoardLines = () => {
       const x = col * CELL_SIZE + CELL_SIZE / 2;
       const y = 6 * CELL_SIZE + CELL_SIZE / 2;
       
-      // 四个角的标记点
-      if (col > 0) { // 左侧标记
-        markers.push(
-          <Line key={`pawn-left-${col}-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-left-${col}-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-left-${col}-3`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-left-${col}-4`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />
-        );
-      }
-      if (col < 8) { // 右侧标记
-        markers.push(
-          <Line key={`pawn-right-${col}-1`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-right-${col}-2`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-right-${col}-3`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`pawn-right-${col}-4`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />
-        );
-      }
+      // 四个角的标记点（朝向外侧）
+      markers.push(
+        // 左上角（向左上方向）
+        <Line key={`pawn-${col}-tl-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`pawn-${col}-tl-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右上角（向右上方向）
+        <Line key={`pawn-${col}-tr-1`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`pawn-${col}-tr-2`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 左下角（向左下方向）
+        <Line key={`pawn-${col}-bl-1`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`pawn-${col}-bl-2`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右下角（向右下方向）
+        <Line key={`pawn-${col}-br-1`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`pawn-${col}-br-2`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />
+      );
     });
     
     // 卒位置 (黑方，行3)
@@ -87,23 +87,21 @@ const ChessBoardLines = () => {
       const x = col * CELL_SIZE + CELL_SIZE / 2;
       const y = 3 * CELL_SIZE + CELL_SIZE / 2;
       
-      // 四个角的标记点
-      if (col > 0) { // 左侧标记
-        markers.push(
-          <Line key={`zu-left-${col}-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-left-${col}-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-left-${col}-3`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-left-${col}-4`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />
-        );
-      }
-      if (col < 8) { // 右侧标记
-        markers.push(
-          <Line key={`zu-right-${col}-1`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-right-${col}-2`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-right-${col}-3`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-          <Line key={`zu-right-${col}-4`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />
-        );
-      }
+      // 四个角的标记点（朝向外侧）
+      markers.push(
+        // 左上角（向左上方向）
+        <Line key={`zu-${col}-tl-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`zu-${col}-tl-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右上角（向右上方向）
+        <Line key={`zu-${col}-tr-1`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`zu-${col}-tr-2`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 左下角（向左下方向）
+        <Line key={`zu-${col}-bl-1`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`zu-${col}-bl-2`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右下角（向右下方向）
+        <Line key={`zu-${col}-br-1`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`zu-${col}-br-2`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />
+      );
     });
     
     // 炮位置
@@ -116,16 +114,20 @@ const ChessBoardLines = () => {
       const x = col * CELL_SIZE + CELL_SIZE / 2;
       const y = row * CELL_SIZE + CELL_SIZE / 2;
       
-      // 四个角的标记点
+      // 四个角的标记点（朝向外侧）
       markers.push(
-        <Line key={`cannon-${row}-${col}-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-3`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-4`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-5`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-6`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-7`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
-        <Line key={`cannon-${row}-${col}-8`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />
+        // 左上角（向左上方向）
+        <Line key={`cannon-${row}-${col}-1`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset - markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`cannon-${row}-${col}-2`} x1={x - markerOffset} y1={y - markerOffset} x2={x - markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右上角（向右上方向）
+        <Line key={`cannon-${row}-${col}-3`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset + markerSize} y2={y - markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`cannon-${row}-${col}-4`} x1={x + markerOffset} y1={y - markerOffset} x2={x + markerOffset} y2={y - markerOffset - markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 左下角（向左下方向）
+        <Line key={`cannon-${row}-${col}-5`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset - markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`cannon-${row}-${col}-6`} x1={x - markerOffset} y1={y + markerOffset} x2={x - markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />,
+        // 右下角（向右下方向）
+        <Line key={`cannon-${row}-${col}-7`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset + markerSize} y2={y + markerOffset} stroke={strokeColor} strokeWidth={1} />,
+        <Line key={`cannon-${row}-${col}-8`} x1={x + markerOffset} y1={y + markerOffset} x2={x + markerOffset} y2={y + markerOffset + markerSize} stroke={strokeColor} strokeWidth={1} />
       );
     });
     
@@ -266,7 +268,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   onCellPress,
   selectedPiece,
   validMoves = [],
-  disabled = false
+  disabled = false,
+  lastMove = null,
+  isAIMode = false
 }) => {
   const isSelected = (row: number, col: number) => {
     return selectedPiece?.row === row && selectedPiece?.col === col;
@@ -276,10 +280,20 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return validMoves.some(move => move.row === row && move.col === col);
   };
 
+  const isLastMoveFrom = (row: number, col: number): boolean => {
+    return lastMove?.from.row === row && lastMove?.from.col === col;
+  };
+
+  const isLastMoveTo = (row: number, col: number): boolean => {
+    return lastMove?.to.row === row && lastMove?.to.col === col;
+  };
+
   const renderCell = (row: number, col: number) => {
     const piece = board[row][col];
     const selected = isSelected(row, col);
     const canMove = isValidMove(row, col);
+    const isMoveFrom = isLastMoveFrom(row, col);
+    const isMoveTo = isLastMoveTo(row, col);
 
     return (
       <Pressable
@@ -310,39 +324,72 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
           />
         )}
 
+        {/* 移动前位置的空心圆圈 */}
+        {isMoveFrom && (
+          <Box
+            position="absolute"
+            w={`${CELL_SIZE * 0.25}px`}
+            h={`${CELL_SIZE * 0.25}px`}
+            borderRadius="full"
+            borderWidth={2}
+            borderColor="rgba(255, 215, 0, 0.8)"
+            bg="transparent"
+            shadow={3}
+          />
+        )}
+
         {/* 棋子 */}
         {piece && (
-          <Box
-            w={`${CELL_SIZE * 0.8}px`}
-            h={`${CELL_SIZE * 0.8}px`}
-            borderRadius="full"
-            bg={piece.player === 'red' ? 'rgba(255, 100, 100, 0.95)' : 'rgba(60, 60, 60, 0.95)'}
-            borderWidth={selected ? 4 : 3}
-            borderColor={selected ? '#ffd700' : piece.player === 'red' ? '#cc0000' : '#333333'}
-            alignItems="center"
-            justifyContent="center"
-            shadow={6}
-            position="relative"
-          >
-            <Text
-              fontSize={`${Math.max(14, CELL_SIZE * 0.35)}px`}
-              fontWeight="bold"
-              color={piece.player === 'red' ? '#800000' : 'white'}
-              fontFamily="mono"
-            >
-              {getPieceText(piece)}
-            </Text>
-
-            {/* 棋子内部高光 */}
+          <Box position="relative">
+            {/* 移动后的发光效果 */}
+            {isMoveTo && (
+              <Box
+                position="absolute"
+                w={`${CELL_SIZE * 0.9}px`}
+                h={`${CELL_SIZE * 0.9}px`}
+                borderRadius="full"
+                borderWidth={2}
+                borderColor="rgba(255, 215, 0, 0.6)"
+                bg="transparent"
+                left={`${-CELL_SIZE * 0.05}px`}
+                top={`${-CELL_SIZE * 0.05}px`}
+                shadow={6}
+              />
+            )}
+            
             <Box
-              position="absolute"
-              top={2}
-              left={2}
-              w={`${CELL_SIZE * 0.25}px`}
-              h={`${CELL_SIZE * 0.25}px`}
+              w={`${CELL_SIZE * 0.8}px`}
+              h={`${CELL_SIZE * 0.8}px`}
               borderRadius="full"
-              bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.3)'}
-            />
+              bg={piece.player === 'red' ? 'rgba(255, 100, 100, 0.95)' : 'rgba(60, 60, 60, 0.95)'}
+              borderWidth={selected ? 4 : isMoveTo ? 4 : 3}
+              borderColor={selected ? '#ffd700' : isMoveTo ? '#ffd700' : piece.player === 'red' ? '#cc0000' : '#333333'}
+              alignItems="center"
+              justifyContent="center"
+              shadow={isMoveTo ? 8 : 6}
+              position="relative"
+            >
+              <Text
+                fontSize={`${Math.max(14, CELL_SIZE * 0.35)}px`}
+                fontWeight="bold"
+                color={piece.player === 'red' ? '#800000' : 'white'}
+                fontFamily="mono"
+                style={!isAIMode && piece.player === 'black' ? { transform: [{ rotate: '180deg' }] } : {}}
+              >
+                {getPieceText(piece)}
+              </Text>
+
+              {/* 棋子内部高光 */}
+              <Box
+                position="absolute"
+                top={2}
+                left={2}
+                w={`${CELL_SIZE * 0.25}px`}
+                h={`${CELL_SIZE * 0.25}px`}
+                borderRadius="full"
+                bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.3)'}
+              />
+            </Box>
           </Box>
         )}
 
@@ -421,6 +468,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
               color="rgba(255, 215, 0, 0.9)"
               fontFamily="mono"
               fontWeight="bold"
+              style={!isAIMode ? { transform: [{ rotate: '180deg' }] } : {}}
             >
               楚河
             </Text>

@@ -51,19 +51,24 @@ const GameControls: React.FC<GameControlsProps> = ({
   const getStatusText = () => {
     if (isGameOver) {
       if (winner === 'draw') {
-        return '平局！';
+        return '🤝 平局！';
       }
-      if (isAIMode && winner === 'O') {
-        return 'AI 获胜！';
+      if (isAIMode) {
+        return winner === 'X' ? '🎉 你获胜了！' : '😔 AI获胜';
+      } else {
+        return winner === 'X' ? '🎉 玩家X获胜！' : '🎉 玩家O获胜！';
       }
-      return `玩家 ${winner} 获胜！`;
     }
     
     if (isAIThinking) {
-      return 'AI 思考中...';
+      return '🤖 AI思考中...';
     }
     
-    return `轮到玩家 ${currentPlayer}`;
+    if (isAIMode) {
+      return currentPlayer === 'X' ? '🎯 轮到你了！' : '⏳ 等待AI...';
+    } else {
+      return currentPlayer === 'X' ? '🎯 轮到玩家X！' : '🎯 轮到玩家O！';
+    }
   };
 
   const getStatusColor = () => {
@@ -120,16 +125,58 @@ const GameControls: React.FC<GameControlsProps> = ({
               {getStatusText()}
             </Text>
             
-            {!isGameOver && (
-              <Text
-                fontSize="xs"
-                color={isAIMode ? "#0080ff" : "#00ff88"}
-                fontFamily="mono"
-                textAlign="center"
-                mt={2}
-              >
-                {isAIMode ? '你是X，AI是O' : '本地双人对战'}
-              </Text>
+            {/* 当前玩家指示器 */}
+            {!isGameOver && !isAIThinking && (
+              <VStack alignItems="center" mt={2} space={1}>
+                <HStack alignItems="center" space={2}>
+                  <Text
+                    fontSize="lg"
+                    fontWeight="bold"
+                    color={currentPlayer === 'X' ? '#00ff88' : '#ff0080'}
+                  >
+                    {currentPlayer === 'X' ? 'X' : 'O'}
+                  </Text>
+                  <Text
+                    fontSize="sm"
+                    color={currentPlayer === 'X' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                    fontFamily="mono"
+                  >
+                    {isAIMode 
+                      ? '玩家X（你）' 
+                      : '玩家X（我方）'}
+                  </Text>
+                </HStack>
+                <Text
+                  fontSize="xs"
+                  color={isAIMode ? "#0080ff" : "#00ff88"}
+                  fontFamily="mono"
+                  textAlign="center"
+                >
+                  {isAIMode ? '人机对战模式' : '本地双人对战'}
+                </Text>
+              </VStack>
+            )}
+
+            {/* AI思考指示器 */}
+            {isAIThinking && (
+              <HStack alignItems="center" mt={2} space={2}>
+                <Box
+                  w="16px"
+                  h="16px"
+                  borderRadius="full"
+                  bg="#0080ff"
+                  borderWidth={2}
+                  borderColor="#4da6ff"
+                  shadow={3}
+                />
+                <Text
+                  fontSize="sm"
+                  color="#0080ff"
+                  fontFamily="mono"
+                >
+                  🤖 AI正在思考...
+                </Text>
+              </HStack>
             )}
           </Box>
         </VStack>

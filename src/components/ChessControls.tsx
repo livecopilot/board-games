@@ -56,23 +56,32 @@ const ChessControls: React.FC<ChessControlsProps> = ({
   const getStatusText = () => {
     if (isGameOver) {
       if (winner === 'draw') {
-        return '平局！';
+        return '🤝 平局！';
       }
-      if (isAIMode && winner === 'black') {
-        return 'AI 获胜！';
+      if (isAIMode) {
+        return winner === 'red' ? '🎉 你获胜了！' : '😔 AI获胜';
+      } else {
+        return winner === 'red' ? '🎉 红方获胜！' : '🎉 黑方获胜！';
       }
-      return `${getPlayerText(winner!)} 获胜！`;
     }
     
     if (isAIThinking) {
-      return 'AI 思考中...';
+      return '🤖 AI思考中...';
     }
 
     if (isInCheck) {
-      return `${getPlayerText(currentPlayer)} 被将军！`;
+      if (isAIMode) {
+        return currentPlayer === 'red' ? '⚠️ 你被将军了！' : '⚠️ AI被将军了！';
+      } else {
+        return currentPlayer === 'red' ? '⚠️ 红方被将军！' : '⚠️ 黑方被将军！';
+      }
     }
     
-    return `轮到 ${getPlayerText(currentPlayer)}`;
+    if (isAIMode) {
+      return currentPlayer === 'red' ? '🎯 轮到你了！' : '⏳ 等待AI...';
+    } else {
+      return currentPlayer === 'red' ? '🎯 轮到红方！' : '🎯 轮到黑方！';
+    }
   };
 
   const getStatusColor = () => {
@@ -148,10 +157,12 @@ const ChessControls: React.FC<ChessControlsProps> = ({
                   />
                   <Text
                     fontSize="sm"
-                    color="rgba(255, 255, 255, 0.8)"
+                    color={currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
                     fontFamily="mono"
                   >
-                    {getPlayerText(currentPlayer)}回合
+                    {isAIMode 
+                      ? '红方（你）' 
+                      : '红方（我方）'}
                   </Text>
                 </HStack>
                 <Text
@@ -160,7 +171,7 @@ const ChessControls: React.FC<ChessControlsProps> = ({
                   fontFamily="mono"
                   textAlign="center"
                 >
-                  {isAIMode ? '你是红方，AI是黑方' : '本地双人对战'}
+                  {isAIMode ? '人机对战模式' : '本地双人对战'}
                 </Text>
               </VStack>
             )}

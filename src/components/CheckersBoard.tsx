@@ -5,7 +5,7 @@ import {
   Pressable,
 } from 'native-base';
 import { Dimensions } from 'react-native';
-import { CheckersBoard as CheckersBoardType, Position, CheckersPiece } from '../types';
+import { CheckersBoard as CheckersBoardType, Position, CheckersPiece, CheckersMove } from '../types';
 
 interface CheckersBoardProps {
   board: CheckersBoardType;
@@ -13,6 +13,7 @@ interface CheckersBoardProps {
   selectedPiece?: Position | null;
   validMoves?: Position[];
   disabled?: boolean;
+  lastMove?: CheckersMove | null;
 }
 
 const { width } = Dimensions.get('window');
@@ -25,6 +26,7 @@ const CheckersBoard: React.FC<CheckersBoardProps> = ({
   selectedPiece,
   validMoves = [],
   disabled = false,
+  lastMove = null,
 }) => {
   
   const getCellColor = (row: number, col: number) => {
@@ -45,11 +47,21 @@ const CheckersBoard: React.FC<CheckersBoardProps> = ({
     return validMoves.some(move => move.row === row && move.col === col);
   };
 
+  const isLastMoveFrom = (row: number, col: number): boolean => {
+    return lastMove?.from.row === row && lastMove?.from.col === col;
+  };
+
+  const isLastMoveTo = (row: number, col: number): boolean => {
+    return lastMove?.to.row === row && lastMove?.to.col === col;
+  };
+
   const renderCell = (row: number, col: number) => {
     const piece = board[row][col];
     const isSelected = isPieceSelected(row, col);
     const canMoveTo = isValidMove(row, col);
     const isDarkSquare = (row + col) % 2 === 1;
+    const isMoveFrom = isLastMoveFrom(row, col);
+    const isMoveTo = isLastMoveTo(row, col);
 
     return (
       <Pressable
@@ -82,52 +94,84 @@ const CheckersBoard: React.FC<CheckersBoardProps> = ({
           />
         )}
 
+        {/* 移动前位置的空心圆圈 */}
+        {isMoveFrom && (
+          <Box
+            position="absolute"
+            w="16px"
+            h="16px"
+            borderRadius="full"
+            borderWidth={2}
+            borderColor="rgba(255, 215, 0, 0.8)"
+            bg="transparent"
+            shadow={3}
+          />
+        )}
+
         {/* 棋子 */}
         {piece && (
-          <Box
-            w={`${CELL_SIZE * 0.7}px`}
-            h={`${CELL_SIZE * 0.7}px`}
-            borderRadius="full"
-            bg={getPieceColor(piece)}
-            borderWidth={3}
-            borderColor={piece.player === 'red' ? '#ff6060' : '#606060'}
-            alignItems="center"
-            justifyContent="center"
-            shadow={6}
-            position="relative"
-          >
-            {/* 王的标记 */}
-            {piece.isKing && (
+          <Box position="relative">
+            {/* 移动后的发光效果 */}
+            {isMoveTo && (
               <Box
                 position="absolute"
-                w="100%"
-                h="100%"
+                w={`${CELL_SIZE * 0.8}px`}
+                h={`${CELL_SIZE * 0.8}px`}
                 borderRadius="full"
                 borderWidth={2}
-                borderColor="#ffd700"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text
-                  fontSize={`${CELL_SIZE * 0.3}px`}
-                  color="#ffd700"
-                  fontWeight="bold"
-                >
-                  ♔
-                </Text>
-              </Box>
+                borderColor="rgba(255, 215, 0, 0.6)"
+                bg="transparent"
+                left={`${-CELL_SIZE * 0.05}px`}
+                top={`${-CELL_SIZE * 0.05}px`}
+                shadow={6}
+              />
             )}
-
-            {/* 棋子内部高光 */}
+            
             <Box
-              position="absolute"
-              top={1}
-              left={1}
-              w={`${CELL_SIZE * 0.3}px`}
-              h={`${CELL_SIZE * 0.3}px`}
+              w={`${CELL_SIZE * 0.7}px`}
+              h={`${CELL_SIZE * 0.7}px`}
               borderRadius="full"
-              bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)'}
-            />
+              bg={getPieceColor(piece)}
+              borderWidth={isMoveTo ? 4 : 3}
+              borderColor={isMoveTo ? '#ffd700' : piece.player === 'red' ? '#ff6060' : '#606060'}
+              alignItems="center"
+              justifyContent="center"
+              shadow={isMoveTo ? 8 : 6}
+              position="relative"
+            >
+              {/* 王的标记 */}
+              {piece.isKing && (
+                <Box
+                  position="absolute"
+                  w="100%"
+                  h="100%"
+                  borderRadius="full"
+                  borderWidth={2}
+                  borderColor="#ffd700"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Text
+                    fontSize={`${CELL_SIZE * 0.3}px`}
+                    color="#ffd700"
+                    fontWeight="bold"
+                  >
+                    ♔
+                  </Text>
+                </Box>
+              )}
+
+              {/* 棋子内部高光 */}
+              <Box
+                position="absolute"
+                top={1}
+                left={1}
+                w={`${CELL_SIZE * 0.3}px`}
+                h={`${CELL_SIZE * 0.3}px`}
+                borderRadius="full"
+                bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)'}
+              />
+            </Box>
           </Box>
         )}
 
