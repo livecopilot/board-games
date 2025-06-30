@@ -234,9 +234,9 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
           {/* 重新开始按钮 */}
           <Pressable
             onPress={() => setShowResetDialog(true)}
-            bg="rgba(255, 0, 128, 0.1)"
-            borderWidth={1}
-            borderColor="rgba(255, 0, 128, 0.4)"
+            bg="rgba(255, 0, 128, 0.2)"
+            borderWidth={2}
+            borderColor="rgba(255, 0, 128, 0.6)"
             borderRadius="lg"
             px={3}
             py={3}
@@ -245,13 +245,13 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             flex={1}
             mb={2}
             alignItems="center"
-            _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
-            shadow={2}
+            _pressed={{ bg: "rgba(255, 0, 128, 0.3)" }}
+            shadow={3}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="refresh" size={14} color="#ff0080" />
+              <IconFont name="refresh" size={14} color="rgba(255, 255, 255, 0.9)" />
               <Text
-                color="#ff0080"
+                color="rgba(255, 255, 255, 0.9)"
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
@@ -265,9 +265,9 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
           <Pressable
             onPress={onUndo}
             isDisabled={!canUndo || mustCapture}
-            bg={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
-            borderWidth={1}
-            borderColor={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
+            bg={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+            borderWidth={2}
+            borderColor={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
             borderRadius="lg"
             px={3}
             py={3}
@@ -276,13 +276,14 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             flex={1}
             mb={2}
             alignItems="center"
-            _pressed={canUndo && !mustCapture ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
-            shadow={canUndo && !mustCapture ? 2 : 0}
+            _pressed={canUndo && !mustCapture ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+            shadow={canUndo && !mustCapture ? 3 : 0}
+            opacity={canUndo && !mustCapture ? 1 : 0.5}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="arrow-undo" size={14} color={canUndo && !mustCapture ? "#ff8000" : "gray.500"} />
+              <IconFont name="arrow-undo" size={14} color={canUndo && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
               <Text
-                color={canUndo && !mustCapture ? "#ff8000" : "gray.500"}
+                color={canUndo && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
@@ -295,9 +296,9 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
           {/* 游戏模式切换按钮 */}
           <Pressable
             onPress={() => setShowToggleDialog(true)}
-            bg="rgba(255, 0, 128, 0.1)"
-            borderWidth={1}
-            borderColor="rgba(255, 0, 128, 0.4)"
+            bg="rgba(255, 0, 128, 0.2)"
+            borderWidth={2}
+            borderColor="rgba(255, 0, 128, 0.6)"
             borderRadius="lg"
             px={3}
             py={3}
@@ -306,13 +307,13 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             flex={1}
             mb={2}
             alignItems="center"
-            _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
-            shadow={2}
+            _pressed={{ bg: "rgba(255, 0, 128, 0.3)" }}
+            shadow={3}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name={isAIMode ? "hardware-chip" : "people"} size={14} color="#ff0080" />
+              <IconFont name={isAIMode ? "hardware-chip" : "people"} size={14} color="rgba(255, 255, 255, 0.9)" />
               <Text
-                color="#ff0080"
+                color="rgba(255, 255, 255, 0.9)"
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
@@ -326,9 +327,9 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
           {/* 设置按钮 */}
           <Pressable
             onPress={onShowSettings}
-            bg="rgba(128, 128, 255, 0.1)"
-            borderWidth={1}
-            borderColor="rgba(128, 128, 255, 0.4)"
+            bg="rgba(128, 128, 255, 0.2)"
+            borderWidth={2}
+            borderColor="rgba(128, 128, 255, 0.6)"
             borderRadius="lg"
             px={3}
             py={3}
@@ -337,13 +338,13 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             flex={1}
             mb={2}
             alignItems="center"
-            _pressed={{ bg: "rgba(128, 128, 255, 0.2)" }}
-            shadow={2}
+            _pressed={{ bg: "rgba(128, 128, 255, 0.3)" }}
+            shadow={3}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="settings" size={14} color="#8080ff" />
+              <IconFont name="settings" size={14} color="rgba(255, 255, 255, 0.9)" />
               <Text
-                color="#8080ff"
+                color="rgba(255, 255, 255, 0.9)"
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
@@ -422,23 +423,38 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             p={4}
           >
             <HStack space={2}>
-              <Button
-                variant="ghost"
+              <Pressable
                 flex={1}
                 onPress={() => setShowResetDialog(false)}
-                _text={{ color: "gray.400" }}
+                bg="rgba(128, 128, 128, 0.2)"
+                borderWidth={2}
+                borderColor="rgba(128, 128, 128, 0.5)"
+                borderRadius="lg"
+                py={3}
+                alignItems="center"
+                _pressed={{ bg: "rgba(128, 128, 128, 0.3)" }}
+                shadow={2}
               >
-                取消
-              </Button>
-              <Button
-                bg="#ff0080"
+                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
+                  取消
+                </Text>
+              </Pressable>
+              <Pressable
                 flex={1}
                 onPress={handleReset}
-                _text={{ color: "white", fontWeight: "bold" }}
-                _pressed={{ bg: "#cc0066" }}
+                bg="rgba(255, 0, 128, 0.3)"
+                borderWidth={2}
+                borderColor="rgba(255, 0, 128, 0.7)"
+                borderRadius="lg"
+                py={3}
+                alignItems="center"
+                _pressed={{ bg: "rgba(255, 0, 128, 0.4)" }}
+                shadow={3}
               >
-                确认重新开始
-              </Button>
+                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
+                  确认重新开始
+                </Text>
+              </Pressable>
             </HStack>
           </Box>
         </Box>
@@ -512,23 +528,38 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             p={4}
           >
             <HStack space={2}>
-              <Button
-                variant="ghost"
+              <Pressable
                 flex={1}
                 onPress={() => setShowToggleDialog(false)}
-                _text={{ color: "gray.400" }}
+                bg="rgba(128, 128, 128, 0.2)"
+                borderWidth={2}
+                borderColor="rgba(128, 128, 128, 0.5)"
+                borderRadius="lg"
+                py={3}
+                alignItems="center"
+                _pressed={{ bg: "rgba(128, 128, 128, 0.3)" }}
+                shadow={2}
               >
-                取消
-              </Button>
-              <Button
-                bg="#ff0080"
+                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
+                  取消
+                </Text>
+              </Pressable>
+              <Pressable
                 flex={1}
                 onPress={handleToggleAI}
-                _text={{ color: "white", fontWeight: "bold" }}
-                _pressed={{ bg: "#cc0066" }}
+                bg="rgba(255, 0, 128, 0.3)"
+                borderWidth={2}
+                borderColor="rgba(255, 0, 128, 0.7)"
+                borderRadius="lg"
+                py={3}
+                alignItems="center"
+                _pressed={{ bg: "rgba(255, 0, 128, 0.4)" }}
+                shadow={3}
               >
-                确认切换
-              </Button>
+                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
+                  确认切换
+                </Text>
+              </Pressable>
             </HStack>
           </Box>
         </Box>

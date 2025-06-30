@@ -114,19 +114,20 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
         <Box flex={1}>
           <Pressable
             onPress={handleBackPress}
-            _pressed={{ bg: "rgba(255, 215, 0, 0.1)" }}
+            _pressed={{ bg: "rgba(255, 215, 0, 0.3)" }}
             borderRadius="lg"
-            bg="rgba(255, 215, 0, 0.05)"
-            borderWidth={1}
-            borderColor="rgba(255, 215, 0, 0.3)"
+            bg="rgba(255, 215, 0, 0.2)"
+            borderWidth={2}
+            borderColor="rgba(255, 215, 0, 0.6)"
             px={3}
             py={2}
             alignSelf="flex-start"
+            shadow={3}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="arrow-back" size={16} color="rgba(255, 215, 0, 0.9)" />
+              <IconFont name="arrow-back" size={16} color="rgba(255, 255, 255, 0.9)" />
               <Text
-                color="rgba(255, 215, 0, 0.9)"
+                color="rgba(255, 255, 255, 0.9)"
                 fontWeight="bold"
                 fontSize="sm"
                 fontFamily="mono"
@@ -155,18 +156,19 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           <HStack space={2} justifyContent="flex-end">
             <Pressable
               onPress={() => setShowRules(true)}
-              _pressed={{ bg: "rgba(255, 215, 0, 0.1)" }}
+              _pressed={{ bg: "rgba(255, 215, 0, 0.3)" }}
               borderRadius="lg"
-              bg="rgba(255, 215, 0, 0.05)"
-              borderWidth={1}
-              borderColor="rgba(255, 215, 0, 0.3)"
+              bg="rgba(255, 215, 0, 0.2)"
+              borderWidth={2}
+              borderColor="rgba(255, 215, 0, 0.6)"
               px={3}
               py={2}
+              shadow={3}
             >
               <HStack alignItems="center" space={1}>
-                <IconFont name="book" size={14} color="rgba(255, 215, 0, 0.9)" />
+                <IconFont name="book" size={14} color="rgba(255, 255, 255, 0.9)" />
                 <Text
-                  color="rgba(255, 215, 0, 0.9)"
+                  color="rgba(255, 255, 255, 0.9)"
                   fontWeight="bold"
                   fontSize="sm"
                   fontFamily="mono"
@@ -177,18 +179,19 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
             </Pressable>
             <Pressable
               onPress={() => setShowTips(true)}
-              _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
+              _pressed={{ bg: "rgba(255, 128, 0, 0.3)" }}
               borderRadius="lg"
-              bg="rgba(255, 128, 0, 0.05)"
-              borderWidth={1}
-              borderColor="rgba(255, 128, 0, 0.3)"
+              bg="rgba(255, 128, 0, 0.2)"
+              borderWidth={2}
+              borderColor="rgba(255, 128, 0, 0.7)"
               px={3}
               py={2}
+              shadow={3}
             >
               <HStack alignItems="center" space={1}>
-                <IconFont name="bulb" size={14} color="#ff8000" />
+                <IconFont name="bulb" size={14} color="rgba(255, 255, 255, 0.9)" />
                 <Text
-                  color="#ff8000"
+                  color="rgba(255, 255, 255, 0.9)"
                   fontWeight="bold"
                   fontSize="sm"
                   fontFamily="mono"
@@ -325,9 +328,9 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                                          {/* 重新开始按钮 */}
                      <Pressable
                        onPress={resetGame}
-                      bg="rgba(255, 215, 0, 0.1)"
-                      borderWidth={1}
-                      borderColor="rgba(255, 215, 0, 0.4)"
+                      bg="rgba(255, 215, 0, 0.2)"
+                      borderWidth={2}
+                      borderColor="rgba(255, 215, 0, 0.6)"
                       borderRadius="lg"
                       px={3}
                       py={3}
@@ -336,13 +339,13 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                       flex={1}
                       mb={2}
                       alignItems="center"
-                      _pressed={{ bg: "rgba(255, 215, 0, 0.2)" }}
-                      shadow={2}
+                      _pressed={{ bg: "rgba(255, 215, 0, 0.3)" }}
+                      shadow={3}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="refresh" size={14} color="rgba(255, 215, 0, 0.9)" />
+                        <IconFont name="refresh" size={14} color="rgba(255, 255, 255, 0.9)" />
                         <Text
-                          color="rgba(255, 215, 0, 0.9)"
+                          color="rgba(255, 255, 255, 0.9)"
                           fontWeight="bold"
                           fontSize="sm"
                           fontFamily="mono"
@@ -356,9 +359,9 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                     <Pressable
                       onPress={undoMove}
                       isDisabled={!canUndo}
-                      bg={canUndo ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
-                      borderWidth={1}
-                      borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
+                      bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+                      borderWidth={2}
+                      borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
                       borderRadius="lg"
                       px={3}
                       py={3}
@@ -367,13 +370,14 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                       flex={1}
                       mb={2}
                       alignItems="center"
-                      _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
-                      shadow={canUndo ? 2 : 0}
+                      _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+                      shadow={canUndo ? 3 : 0}
+                      opacity={canUndo ? 1 : 0.5}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="arrow-undo" size={14} color={canUndo ? "#ff8000" : "gray.500"} />
+                        <IconFont name="arrow-undo" size={14} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                         <Text
-                          color={canUndo ? "#ff8000" : "gray.500"}
+                          color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                           fontWeight="bold"
                           fontSize="sm"
                           fontFamily="mono"
