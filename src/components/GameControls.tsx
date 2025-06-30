@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Text,
@@ -7,13 +7,13 @@ import {
   Pressable,
   Button,
 } from 'native-base';
-import { useState } from 'react';
 import Modal from 'react-native-modal';
+import IconFont from 'react-native-vector-icons/Ionicons';
 import { CellValue } from '../types';
 
 interface GameControlsProps {
   currentPlayer: 'X' | 'O';
-  winner: CellValue | 'draw';
+  winner: 'X' | 'O' | 'draw' | null;
   isGameOver: boolean;
   isAIMode: boolean;
   isAIThinking?: boolean;
@@ -21,6 +21,12 @@ interface GameControlsProps {
   onReset: () => void;
   onUndo: () => void;
   onToggleAI: () => void;
+  // 设置相关props
+  showSettings?: boolean;
+  onShowSettings?: () => void;
+  onHideSettings?: () => void;
+  aiDifficulty?: any;
+  onSetDifficulty?: (difficulty: any) => void;
 }
 
 const GameControls: React.FC<GameControlsProps> = ({
@@ -33,6 +39,11 @@ const GameControls: React.FC<GameControlsProps> = ({
   onReset,
   onUndo,
   onToggleAI,
+  showSettings = false,
+  onShowSettings,
+  onHideSettings,
+  aiDifficulty,
+  onSetDifficulty,
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showToggleDialog, setShowToggleDialog] = useState(false);
@@ -84,120 +95,158 @@ const GameControls: React.FC<GameControlsProps> = ({
   };
 
   return (
-    <VStack alignItems="center" px={5} space={5}>
-      {/* 游戏状态显示 */}
-      <Box
-        bg="rgba(255, 255, 255, 0.05)"
-        borderWidth={1}
-        borderColor="rgba(0, 255, 136, 0.3)"
-        borderRadius="lg"
-        p={4}
-        minW="200px"
-        alignItems="center"
-        shadow={3}
-        mt={3}
-      >
-        <Text
-          fontSize="lg"
-          fontWeight="bold"
-          color={getStatusColor()}
-          fontFamily="mono"
-          letterSpacing={1}
-        >
-          {getStatusText()}
-        </Text>
-        
-        {!isGameOver && (
-          <Text
-            fontSize="xs"
-            color={isAIMode ? "#0080ff" : "#00ff88"}
-            fontFamily="mono"
-            textAlign="center"
-            mt={2}
+    <Box>
+      <HStack alignItems="flex-start" px={5} space={4} w="100%">
+        {/* 左侧：游戏状态显示 */}
+        <VStack flex={1} space={3}>
+          <Box
+            bg="rgba(255, 255, 255, 0.05)"
+            borderWidth={1}
+            borderColor="rgba(0, 255, 136, 0.3)"
+            borderRadius="lg"
+            p={4}
+            w="100%"
+            alignItems="center"
+            shadow={3}
+            mt={3}
           >
-            {isAIMode ? '你是X，AI是O' : '本地双人对战'}
-          </Text>
-        )}
-      </Box>
+            <Text
+              fontSize="lg"
+              fontWeight="bold"
+              color={getStatusColor()}
+              fontFamily="mono"
+              letterSpacing={1}
+            >
+              {getStatusText()}
+            </Text>
+            
+            {!isGameOver && (
+              <Text
+                fontSize="xs"
+                color={isAIMode ? "#0080ff" : "#00ff88"}
+                fontFamily="mono"
+                textAlign="center"
+                mt={2}
+              >
+                {isAIMode ? '你是X，AI是O' : '本地双人对战'}
+              </Text>
+            )}
+          </Box>
+        </VStack>
 
-      {/* 控制按钮 */}
-      <HStack space={2} justifyContent="center" w="100%">
-        {/* 重新开始按钮 */}
-        <Pressable
-          onPress={() => setShowResetDialog(true)}
-          bg="rgba(255, 0, 128, 0.1)"
-          borderWidth={1}
-          borderColor="rgba(255, 0, 128, 0.4)"
-          borderRadius="lg"
-          px={3}
-          py={3}
-          flex={1}
-          alignItems="center"
-          _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
-          shadow={2}
-        >
-          <Text
-            color="#ff0080"
-            fontWeight="bold"
-            fontSize="xs"
-            fontFamily="mono"
+        {/* 右侧：控制按钮 */}
+        <VStack space={2} flex={1} mt={3}>
+          {/* 重新开始按钮 */}
+          <Pressable
+            onPress={() => setShowResetDialog(true)}
+            bg="rgba(255, 0, 128, 0.1)"
+            borderWidth={1}
+            borderColor="rgba(255, 0, 128, 0.4)"
+            borderRadius="lg"
+            px={4}
+            py={3}
+            w="50%"
+            alignItems="center"
+            _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
+            shadow={2}
           >
-            重新开始
-          </Text>
-        </Pressable>
+            <HStack alignItems="center" space={1}>
+              <IconFont name="refresh" size={14} color="#ff0080" />
+              <Text
+                color="#ff0080"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                重新开始
+              </Text>
+            </HStack>
+          </Pressable>
 
-        {/* 撤销按钮 */}
-        <Pressable
-          onPress={onUndo}
-          isDisabled={!canUndo}
-          bg={canUndo ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
-          borderWidth={1}
-          borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
-          borderRadius="lg"
-          px={3}
-          py={3}
-          flex={1}
-          alignItems="center"
-          _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
-          shadow={canUndo ? 2 : 0}
-        >
-          <Text
-            color={canUndo ? "#ff8000" : "gray.500"}
-            fontWeight="bold"
-            fontSize="xs"
-            fontFamily="mono"
+          {/* 撤销按钮 */}
+          <Pressable
+            onPress={onUndo}
+            isDisabled={!canUndo}
+            bg={canUndo ? "rgba(255, 128, 0, 0.1)" : "rgba(128, 128, 128, 0.1)"}
+            borderWidth={1}
+            borderColor={canUndo ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
+            borderRadius="lg"
+            px={4}
+            py={3}
+            w="50%"
+            alignItems="center"
+            _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
+            shadow={canUndo ? 2 : 0}
           >
-            撤销
-          </Text>
-        </Pressable>
+            <HStack alignItems="center" space={1}>
+              <IconFont name="arrow-undo" size={14} color={canUndo ? "#ff8000" : "gray.500"} />
+              <Text
+                color={canUndo ? "#ff8000" : "gray.500"}
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                撤销
+              </Text>
+            </HStack>
+          </Pressable>
 
-        {/* 游戏模式切换按钮 */}
-        <Pressable
-          onPress={() => setShowToggleDialog(true)}
-          bg="rgba(0, 255, 136, 0.1)"
-          borderWidth={1}
-          borderColor="rgba(0, 255, 136, 0.4)"
-          borderRadius="lg"
-          px={3}
-          py={3}
-          flex={1.2}
-          alignItems="center"
-          _pressed={{ bg: "rgba(0, 255, 136, 0.2)" }}
-          shadow={2}
-        >
-          <Text
-            color="#00ff88"
-            fontWeight="bold"
-            fontSize="xs"
-            fontFamily="mono"
-            textAlign="center"
+          {/* 游戏模式切换按钮 */}
+          <Pressable
+            onPress={() => setShowToggleDialog(true)}
+            bg="rgba(0, 255, 136, 0.1)"
+            borderWidth={1}
+            borderColor="rgba(0, 255, 136, 0.4)"
+            borderRadius="lg"
+            px={4}
+            py={3}
+            w="50%"
+            alignItems="center"
+            _pressed={{ bg: "rgba(0, 255, 136, 0.2)" }}
+            shadow={2}
           >
-            {isAIMode ? 'AI对战' : '双人对战'}
-          </Text>
-        </Pressable>
+            <HStack alignItems="center" space={1}>
+              <IconFont name={isAIMode ? "hardware-chip" : "people"} size={14} color="#00ff88" />
+              <Text
+                color="#00ff88"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+                textAlign="center"
+              >
+                {isAIMode ? 'AI对战' : '双人对战'}
+              </Text>
+            </HStack>
+          </Pressable>
+
+          {/* 设置按钮 */}
+          <Pressable
+            onPress={onShowSettings}
+            bg="rgba(128, 128, 255, 0.1)"
+            borderWidth={1}
+            borderColor="rgba(128, 128, 255, 0.4)"
+            borderRadius="lg"
+            px={4}
+            py={3}
+            w="50%"
+            alignItems="center"
+            _pressed={{ bg: "rgba(128, 128, 255, 0.2)" }}
+            shadow={2}
+          >
+            <HStack alignItems="center" space={1}>
+              <IconFont name="settings" size={14} color="#8080ff" />
+              <Text
+                color="#8080ff"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                设置
+              </Text>
+            </HStack>
+          </Pressable>
+        </VStack>
       </HStack>
-
-
 
       {/* 重新开始确认弹框 */}
       <Modal
@@ -376,7 +425,136 @@ const GameControls: React.FC<GameControlsProps> = ({
           </Box>
         </Box>
       </Modal>
-    </VStack>
+
+      {/* 设置弹框 */}
+      <Modal
+        isVisible={showSettings}
+        onBackdropPress={onHideSettings}
+        onBackButtonPress={onHideSettings}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        backdropOpacity={0.7}
+        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Box
+          bg="#000015"
+          borderColor="rgba(128, 128, 255, 0.3)"
+          borderWidth={1}
+          borderRadius="lg"
+          w="90%"
+          maxH="80%"
+          shadow={5}
+        >
+          {/* 头部 */}
+          <HStack
+            justifyContent="space-between"
+            alignItems="center"
+            bg="rgba(128, 128, 255, 0.1)"
+            borderTopRadius="lg"
+            borderBottomWidth={1}
+            borderBottomColor="rgba(128, 128, 255, 0.3)"
+            px={4}
+            py={3}
+          >
+            <Text fontSize="lg" fontWeight="bold" color="#8080ff" fontFamily="mono">
+              游戏设置
+            </Text>
+            <Pressable
+              onPress={onHideSettings}
+              _pressed={{ bg: "rgba(128, 128, 255, 0.1)" }}
+              borderRadius="md"
+              px={2}
+              py={1}
+            >
+              <Text
+                color="#8080ff"
+                fontWeight="bold"
+                fontSize="sm"
+                fontFamily="mono"
+              >
+                关闭
+              </Text>
+            </Pressable>
+          </HStack>
+
+          {/* 内容 */}
+          <VStack space={4} p={4}>
+            <Text fontSize="md" fontWeight="bold" color="white" fontFamily="mono">
+              AI难度设置
+            </Text>
+            
+            <VStack space={3}>
+              <Pressable
+                onPress={() => onSetDifficulty && onSetDifficulty('easy')}
+                bg={aiDifficulty === 'easy' ? "rgba(128, 128, 255, 0.2)" : "rgba(128, 128, 255, 0.05)"}
+                borderWidth={1}
+                borderColor={aiDifficulty === 'easy' ? "rgba(128, 128, 255, 0.6)" : "rgba(128, 128, 255, 0.3)"}
+                borderRadius="lg"
+                px={4}
+                py={3}
+                _pressed={{ bg: "rgba(128, 128, 255, 0.15)" }}
+              >
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Text color="white" fontSize="sm" fontFamily="mono">简单</Text>
+                  <Text color="gray.400" fontSize="xs" fontFamily="mono">适合新手</Text>
+                </HStack>
+              </Pressable>
+              
+              <Pressable
+                onPress={() => onSetDifficulty && onSetDifficulty('medium')}
+                bg={aiDifficulty === 'medium' ? "rgba(128, 128, 255, 0.2)" : "rgba(128, 128, 255, 0.05)"}
+                borderWidth={1}
+                borderColor={aiDifficulty === 'medium' ? "rgba(128, 128, 255, 0.6)" : "rgba(128, 128, 255, 0.3)"}
+                borderRadius="lg"
+                px={4}
+                py={3}
+                _pressed={{ bg: "rgba(128, 128, 255, 0.15)" }}
+              >
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Text color="white" fontSize="sm" fontFamily="mono">中等</Text>
+                  <Text color="gray.400" fontSize="xs" fontFamily="mono">平衡挑战</Text>
+                </HStack>
+              </Pressable>
+              
+              <Pressable
+                onPress={() => onSetDifficulty && onSetDifficulty('hard')}
+                bg={aiDifficulty === 'hard' ? "rgba(128, 128, 255, 0.2)" : "rgba(128, 128, 255, 0.05)"}
+                borderWidth={1}
+                borderColor={aiDifficulty === 'hard' ? "rgba(128, 128, 255, 0.6)" : "rgba(128, 128, 255, 0.3)"}
+                borderRadius="lg"
+                px={4}
+                py={3}
+                _pressed={{ bg: "rgba(128, 128, 255, 0.15)" }}
+              >
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Text color="white" fontSize="sm" fontFamily="mono">困难</Text>
+                  <Text color="gray.400" fontSize="xs" fontFamily="mono">高级挑战</Text>
+                </HStack>
+              </Pressable>
+            </VStack>
+          </VStack>
+
+          {/* 底部按钮 */}
+          <Box
+            bg="rgba(128, 128, 255, 0.05)"
+            borderBottomRadius="lg"
+            borderTopWidth={1}
+            borderTopColor="rgba(128, 128, 255, 0.2)"
+            p={4}
+          >
+            <Button
+              onPress={onHideSettings}
+              bg="#8080ff"
+              _text={{ color: "white", fontWeight: "bold" }}
+              _pressed={{ bg: "#6060cc" }}
+              w="100%"
+            >
+              保存设置
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 

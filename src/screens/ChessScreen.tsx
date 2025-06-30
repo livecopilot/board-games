@@ -196,28 +196,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                 </Text>
               </HStack>
             </Pressable>
-            <Pressable
-              onPress={() => setShowSettings(true)}
-              _pressed={{ bg: "rgba(128, 128, 255, 0.1)" }}
-              borderRadius="lg"
-              bg="rgba(128, 128, 255, 0.05)"
-              borderWidth={1}
-              borderColor="rgba(128, 128, 255, 0.3)"
-              px={3}
-              py={2}
-            >
-              <HStack alignItems="center" space={1}>
-                <IconFont name="settings" size={14} color="#8080ff" />
-                <Text
-                  color="#8080ff"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  设置
-                </Text>
-              </HStack>
-            </Pressable>
+
           </HStack>
         </Box>
       </HStack>
@@ -249,6 +228,11 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           onReset={resetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
+          showSettings={showSettings}
+          onShowSettings={() => setShowSettings(true)}
+          onHideSettings={() => setShowSettings(false)}
+          aiDifficulty={aiDifficulty}
+          onSetDifficulty={handleSetDifficulty}
         />
       </ScrollView>
 
@@ -578,194 +562,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
         </Box>
       </Modal>
 
-      {/* 设置弹框 */}
-      <Modal
-        isVisible={showSettings}
-        onBackdropPress={() => setShowSettings(false)}
-        onBackButtonPress={() => setShowSettings(false)}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(128, 128, 255, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="90%"
-          maxH="80%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(128, 128, 255, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(128, 128, 255, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="#8080ff" fontFamily="mono">
-              ⚙️ 游戏设置
-            </Text>
-            <Pressable
-              onPress={() => setShowSettings(false)}
-              _pressed={{ bg: "rgba(128, 128, 255, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="#8080ff"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
 
-          {/* 内容 */}
-          <VStack space={4} p={4}>
-            <Text color="white" fontSize="md" fontWeight="bold" textAlign="center">
-              AI难度设置
-            </Text>
-            <Text color="rgba(255, 255, 255, 0.7)" fontSize="sm" textAlign="center">
-              当前难度：{getDifficultyText(aiDifficulty)}
-            </Text>
-            
-            <VStack space={3} alignItems="center">
-              <Pressable
-                onPress={() => handleSetDifficulty('easy')}
-                bg={aiDifficulty === 'easy' ? "rgba(0, 255, 136, 0.2)" : "rgba(255, 255, 255, 0.05)"}
-                borderWidth={2}
-                borderColor={aiDifficulty === 'easy' ? "#00ff88" : "rgba(0, 255, 136, 0.3)"}
-                borderRadius="lg"
-                px={6}
-                py={4}
-                w="100%"
-                alignItems="center"
-                shadow={3}
-                _pressed={{ bg: "rgba(0, 255, 136, 0.1)" }}
-              >
-                <HStack alignItems="center" space={3}>
-                  <Text fontSize="lg">🟢</Text>
-                  <VStack alignItems="center">
-                    <Text
-                      color="#00ff88"
-                      fontWeight="bold"
-                      fontSize="lg"
-                      fontFamily="mono"
-                    >
-                      简单
-                    </Text>
-                    <Text
-                      color="rgba(255, 255, 255, 0.7)"
-                      fontSize="xs"
-                      fontFamily="mono"
-                    >
-                      随机移动，适合初学者
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Pressable>
-              
-              <Pressable
-                onPress={() => handleSetDifficulty('medium')}
-                bg={aiDifficulty === 'medium' ? "rgba(255, 128, 0, 0.2)" : "rgba(255, 255, 255, 0.05)"}
-                borderWidth={2}
-                borderColor={aiDifficulty === 'medium' ? "#ff8000" : "rgba(255, 128, 0, 0.3)"}
-                borderRadius="lg"
-                px={6}
-                py={4}
-                w="100%"
-                alignItems="center"
-                shadow={3}
-                _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
-              >
-                <HStack alignItems="center" space={3}>
-                  <Text fontSize="lg">🟡</Text>
-                  <VStack alignItems="center">
-                    <Text
-                      color="#ff8000"
-                      fontWeight="bold"
-                      fontSize="lg"
-                      fontFamily="mono"
-                    >
-                      中等
-                    </Text>
-                    <Text
-                      color="rgba(255, 255, 255, 0.7)"
-                      fontSize="xs"
-                      fontFamily="mono"
-                    >
-                      基本策略，平衡挑战
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Pressable>
-              
-              <Pressable
-                onPress={() => handleSetDifficulty('hard')}
-                bg={aiDifficulty === 'hard' ? "rgba(255, 215, 0, 0.2)" : "rgba(255, 255, 255, 0.05)"}
-                borderWidth={2}
-                borderColor={aiDifficulty === 'hard' ? "rgba(255, 215, 0, 0.9)" : "rgba(255, 215, 0, 0.3)"}
-                borderRadius="lg"
-                px={6}
-                py={4}
-                w="100%"
-                alignItems="center"
-                shadow={3}
-                _pressed={{ bg: "rgba(255, 215, 0, 0.1)" }}
-              >
-                <HStack alignItems="center" space={3}>
-                  <Text fontSize="lg">🔴</Text>
-                  <VStack alignItems="center">
-                    <Text
-                      color="rgba(255, 215, 0, 0.9)"
-                      fontWeight="bold"
-                      fontSize="lg"
-                      fontFamily="mono"
-                    >
-                      困难
-                    </Text>
-                    <Text
-                      color="rgba(255, 255, 255, 0.7)"
-                      fontSize="xs"
-                      fontFamily="mono"
-                    >
-                      智能算法，高级挑战
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Pressable>
-            </VStack>
-          </VStack>
-
-          {/* 底部按钮 */}
-          <Box
-            bg="rgba(128, 128, 255, 0.05)"
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor="rgba(128, 128, 255, 0.2)"
-            p={4}
-          >
-            <Button
-              bg="#8080ff"
-              onPress={() => setShowSettings(false)}
-              _text={{ color: "white", fontWeight: "bold" }}
-              _pressed={{ bg: "#6060cc" }}
-              w="100%"
-            >
-              确定
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
     </Box>
   );
 };
