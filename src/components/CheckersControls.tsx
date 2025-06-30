@@ -106,7 +106,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
     <Box>
       <HStack alignItems="flex-start" px={5} space={4} w="100%">
         {/* 左侧：游戏状态显示 */}
-        <VStack flex={1} space={3}>
+        <VStack flex={1} space={3} minH="120px" justifyContent="flex-start">
           <Box
             bg="rgba(255, 255, 255, 0.05)"
             borderWidth={1}
@@ -207,7 +207,8 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
         </VStack>
 
         {/* 右侧：控制按钮 */}
-        <VStack space={2} flex={1} mt={3}>
+        <Box flex={1} mt={3} minH="120px">
+          <HStack space={2} flexWrap="wrap" alignItems="flex-start">
           {/* 重新开始按钮 */}
           <Pressable
             onPress={() => setShowResetDialog(true)}
@@ -215,9 +216,12 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             borderWidth={1}
             borderColor="rgba(255, 0, 128, 0.4)"
             borderRadius="lg"
-            px={4}
+            px={3}
             py={3}
-            w="50%"
+            minW="30%"
+            maxW="48%"
+            flex={1}
+            mb={2}
             alignItems="center"
             _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
             shadow={2}
@@ -243,9 +247,12 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             borderWidth={1}
             borderColor={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.4)" : "rgba(128, 128, 128, 0.3)"}
             borderRadius="lg"
-            px={4}
+            px={3}
             py={3}
-            w="50%"
+            minW="30%"
+            maxW="48%"
+            flex={1}
+            mb={2}
             alignItems="center"
             _pressed={canUndo && !mustCapture ? { bg: "rgba(255, 128, 0, 0.2)" } : {}}
             shadow={canUndo && !mustCapture ? 2 : 0}
@@ -270,9 +277,12 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             borderWidth={1}
             borderColor="rgba(255, 0, 128, 0.4)"
             borderRadius="lg"
-            px={4}
+            px={3}
             py={3}
-            w="50%"
+            minW="30%"
+            maxW="48%"
+            flex={1}
+            mb={2}
             alignItems="center"
             _pressed={{ bg: "rgba(255, 0, 128, 0.2)" }}
             shadow={2}
@@ -298,9 +308,12 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
             borderWidth={1}
             borderColor="rgba(128, 128, 255, 0.4)"
             borderRadius="lg"
-            px={4}
+            px={3}
             py={3}
-            w="50%"
+            minW="30%"
+            maxW="48%"
+            flex={1}
+            mb={2}
             alignItems="center"
             _pressed={{ bg: "rgba(128, 128, 255, 0.2)" }}
             shadow={2}
@@ -317,7 +330,8 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
               </Text>
             </HStack>
           </Pressable>
-        </VStack>
+          </HStack>
+        </Box>
       </HStack>
 
       {/* 重新开始确认弹框 */}
