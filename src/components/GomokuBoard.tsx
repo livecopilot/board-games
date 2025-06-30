@@ -153,7 +153,6 @@ const GomokuBoard: React.FC<GomokuBoardProps> = ({
             borderRadius="full"
             bg="rgba(255, 215, 0, 0.4)"
             opacity={0}
-            _hover={{ opacity: 0.8 }}
           />
         )}
 
@@ -167,9 +166,9 @@ const GomokuBoard: React.FC<GomokuBoardProps> = ({
                   position: 'absolute',
                   left: -CELL_SIZE * 0.05,
                   top: -CELL_SIZE * 0.05,
-                  width: CELL_SIZE * 0.5,
-                  height: CELL_SIZE * 0.5,
-                  borderRadius: CELL_SIZE * 0.25,
+                  width: CELL_SIZE * 0.8,
+                  height: CELL_SIZE * 0.8,
+                  borderRadius: CELL_SIZE * 0.4,
                   borderWidth: 3,
                   borderColor: '#ffd700',
                   backgroundColor: 'transparent',
@@ -178,25 +177,13 @@ const GomokuBoard: React.FC<GomokuBoardProps> = ({
               />
             )}
 
-            {/* 棋子外环阴影 */}
-            <Box
-              w={`${CELL_SIZE * 0.45}px`}
-              h={`${CELL_SIZE * 0.45}px`}
-              borderRadius="full"
-              bg={piece === 'black' ? '#1a1a1a' : '#f8f8f8'}
-              position="absolute"
-              top={1}
-              left={1}
-              shadow={2}
-            />
-
             {/* 棋子主体 */}
             <Box
-              w={`${CELL_SIZE * 0.4}px`}
-              h={`${CELL_SIZE * 0.4}px`}
+              w={`${CELL_SIZE * 0.7}px`}
+              h={`${CELL_SIZE * 0.7}px`}
               borderRadius="full"
               bg={piece === 'black' ? '#2d2d2d' : '#ffffff'}
-              borderWidth={1}
+              borderWidth={2}
               borderColor={piece === 'black' ? '#404040' : '#e0e0e0'}
               alignItems="center"
               justifyContent="center"
@@ -206,10 +193,10 @@ const GomokuBoard: React.FC<GomokuBoardProps> = ({
               {/* 棋子光泽效果 */}
               <Box
                 position="absolute"
-                top={`${CELL_SIZE * 0.08}px`}
-                left={`${CELL_SIZE * 0.08}px`}
-                w={`${CELL_SIZE * 0.12}px`}
-                h={`${CELL_SIZE * 0.12}px`}
+                top={`${CELL_SIZE * 0.12}px`}
+                left={`${CELL_SIZE * 0.12}px`}
+                w={`${CELL_SIZE * 0.2}px`}
+                h={`${CELL_SIZE * 0.2}px`}
                 borderRadius="full"
                 bg={piece === 'black' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.8)'}
               />
@@ -218,8 +205,8 @@ const GomokuBoard: React.FC<GomokuBoardProps> = ({
               {isLast && (
                 <Box
                   position="absolute"
-                  w={`${CELL_SIZE * 0.15}px`}
-                  h={`${CELL_SIZE * 0.15}px`}
+                  w={`${CELL_SIZE * 0.22}px`}
+                  h={`${CELL_SIZE * 0.22}px`}
                   borderRadius="full"
                   bg={piece === 'black' ? '#ffd700' : '#ff6b35'}
                   shadow={3}
