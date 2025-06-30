@@ -1,5 +1,7 @@
 import { Board, CellValue, Position, AIDifficulty } from "../types";
 import { CheckersBoard, CheckersPiece, CheckersMove, CheckersGameState } from "../types";
+import { ChessBoard, ChessPiece, ChessMove, ChessPieceType } from "../types";
+import { GomokuBoard, GomokuPiece, GomokuMove } from "../types";
 
 // 创建空棋盘
 export const createEmptyBoard = (): Board => {
@@ -621,7 +623,6 @@ export const canContinueCapture = (board: CheckersBoard, position: Position): bo
 };
 
 // 中国象棋相关函数
-import { ChessBoard, ChessPiece, ChessMove, ChessGameState, ChessPieceType } from "../types";
 
 // 创建中国象棋初始棋盘
 export const createChessBoard = (): ChessBoard => {
@@ -1141,4 +1142,363 @@ const evaluateChessBoard = (board: ChessBoard, player: "red" | "black"): number 
   }
 
   return score;
+};
+
+// ======================== 五子棋相关函数 ========================
+
+// 创建五子棋空棋盘 (15x15)
+export const createGomokuBoard = (): GomokuBoard => {
+  return Array(15)
+    .fill(null)
+    .map(() => Array(15).fill(null));
+};
+
+// 检查位置是否在五子棋棋盘内
+const isGomokuInBounds = (row: number, col: number): boolean => {
+  return row >= 0 && row < 15 && col >= 0 && col < 15;
+};
+
+// 检查指定位置是否可以下棋
+export const isValidGomokuMove = (board: GomokuBoard, position: Position): boolean => {
+  const { row, col } = position;
+  return isGomokuInBounds(row, col) && board[row][col] === null;
+};
+
+// 执行五子棋移动
+export const makeGomokuMove = (board: GomokuBoard, move: GomokuMove): GomokuBoard => {
+  if (!isValidGomokuMove(board, move.position)) {
+    return board;
+  }
+
+  const newBoard = board.map((row) => [...row]);
+  newBoard[move.position.row][move.position.col] = move.player;
+  return newBoard;
+};
+
+// 检查从指定位置开始的方向是否有五子连珠
+const checkDirection = (
+  board: GomokuBoard,
+  row: number,
+  col: number,
+  deltaRow: number,
+  deltaCol: number,
+  player: GomokuPiece
+): boolean => {
+  let count = 1; // 包含当前位置
+
+  // 向一个方向检查
+  let r = row + deltaRow;
+  let c = col + deltaCol;
+  while (isGomokuInBounds(r, c) && board[r][c] === player) {
+    count++;
+    r += deltaRow;
+    c += deltaCol;
+  }
+
+  // 向相反方向检查
+  r = row - deltaRow;
+  c = col - deltaCol;
+  while (isGomokuInBounds(r, c) && board[r][c] === player) {
+    count++;
+    r -= deltaRow;
+    c -= deltaCol;
+  }
+
+  return count >= 5;
+};
+
+// 检查五子棋胜利条件
+export const checkGomokuWinner = (board: GomokuBoard): "black" | "white" | "draw" | null => {
+  // 四个方向：水平、垂直、左斜、右斜
+  const directions = [
+    [0, 1], // 水平
+    [1, 0], // 垂直
+    [1, 1], // 左斜
+    [1, -1], // 右斜
+  ];
+
+  for (let row = 0; row < 15; row++) {
+    for (let col = 0; col < 15; col++) {
+      const piece = board[row][col];
+      if (piece) {
+        for (const [deltaRow, deltaCol] of directions) {
+          if (checkDirection(board, row, col, deltaRow, deltaCol, piece)) {
+            return piece;
+          }
+        }
+      }
+    }
+  }
+
+  // 检查是否平局（棋盘已满）
+  let isFull = true;
+  for (let row = 0; row < 15; row++) {
+    for (let col = 0; col < 15; col++) {
+      if (board[row][col] === null) {
+        isFull = false;
+        break;
+      }
+    }
+    if (!isFull) break;
+  }
+
+  return isFull ? "draw" : null;
+};
+
+// 获取所有可用的五子棋移动位置
+export const getGomokuAvailableMoves = (board: GomokuBoard): Position[] => {
+  const moves: Position[] = [];
+  for (let row = 0; row < 15; row++) {
+    for (let col = 0; col < 15; col++) {
+      if (board[row][col] === null) {
+        moves.push({ row, col });
+      }
+    }
+  }
+  return moves;
+};
+
+// 评估位置的战略价值
+const evaluateGomokuPosition = (board: GomokuBoard, position: Position, player: "black" | "white"): number => {
+  const { row, col } = position;
+  let score = 0;
+
+  // 四个方向：水平、垂直、左斜、右斜
+  const directions = [
+    [0, 1], // 水平
+    [1, 0], // 垂直
+    [1, 1], // 左斜
+    [1, -1], // 右斜
+  ];
+
+  for (const [deltaRow, deltaCol] of directions) {
+    score += evaluateDirection(board, row, col, deltaRow, deltaCol, player);
+  }
+
+  // 中心位置加分
+  const center = 7;
+  const distanceFromCenter = Math.abs(row - center) + Math.abs(col - center);
+  score += Math.max(0, 15 - distanceFromCenter);
+
+  return score;
+};
+
+// 评估某个方向的得分
+const evaluateDirection = (
+  board: GomokuBoard,
+  row: number,
+  col: number,
+  deltaRow: number,
+  deltaCol: number,
+  player: "black" | "white"
+): number => {
+  let score = 0;
+  const opponent = player === "black" ? "white" : "black";
+
+  // 检查各种模式的得分
+  const patterns = [
+    { pattern: [player, player, player, player], score: 1000 }, // 四连
+    { pattern: [null, player, player, player, null], score: 500 }, // 活三
+    { pattern: [player, player, player], score: 100 }, // 三连
+    { pattern: [null, player, player, null], score: 50 }, // 活二
+    { pattern: [player, player], score: 10 }, // 二连
+  ];
+
+  // 防守模式（阻止对手）
+  const defensivePatterns = [
+    { pattern: [opponent, opponent, opponent, opponent], score: 900 }, // 阻止对手四连
+    { pattern: [null, opponent, opponent, opponent, null], score: 400 }, // 阻止对手活三
+    { pattern: [opponent, opponent, opponent], score: 80 }, // 阻止对手三连
+  ];
+
+  // 检查正向和反向
+  for (let i = 1; i <= 4; i++) {
+    const segment: GomokuPiece[] = [];
+    for (let j = -i; j <= i; j++) {
+      const r = row + j * deltaRow;
+      const c = col + j * deltaCol;
+      if (isGomokuInBounds(r, c)) {
+        segment.push(j === 0 ? player : board[r][c]);
+      }
+    }
+
+    // 检查攻击模式
+    for (const { pattern, score: patternScore } of patterns) {
+      if (matchesPattern(segment, pattern)) {
+        score += patternScore;
+      }
+    }
+
+    // 检查防守模式
+    for (const { pattern, score: patternScore } of defensivePatterns) {
+      if (matchesPattern(segment, pattern)) {
+        score += patternScore;
+      }
+    }
+  }
+
+  return score;
+};
+
+// 检查序列是否匹配模式
+const matchesPattern = (segment: GomokuPiece[], pattern: GomokuPiece[]): boolean => {
+  if (segment.length < pattern.length) return false;
+
+  for (let i = 0; i <= segment.length - pattern.length; i++) {
+    let matches = true;
+    for (let j = 0; j < pattern.length; j++) {
+      if (pattern[j] !== null && segment[i + j] !== pattern[j]) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) return true;
+  }
+
+  return false;
+};
+
+// 五子棋AI移动
+export const getGomokuAIMove = (
+  board: GomokuBoard,
+  player: "black" | "white",
+  difficulty: AIDifficulty = AIDifficulty.MEDIUM
+): GomokuMove | null => {
+  const availableMoves = getGomokuAvailableMoves(board);
+  if (availableMoves.length === 0) return null;
+
+  switch (difficulty) {
+    case AIDifficulty.EASY:
+      return getGomokuEasyAI(availableMoves, player);
+    case AIDifficulty.MEDIUM:
+      return getGomokuMediumAI(board, availableMoves, player);
+    case AIDifficulty.HARD:
+      return getGomokuHardAI(board, availableMoves, player);
+    default:
+      return getGomokuMediumAI(board, availableMoves, player);
+  }
+};
+
+// 简单AI：随机移动，稍微偏向中心
+const getGomokuEasyAI = (availableMoves: Position[], player: "black" | "white"): GomokuMove => {
+  // 如果是第一步，下在中心附近
+  if (availableMoves.length === 225) {
+    // 15x15 = 225
+    const center = 7;
+    const nearCenter = [
+      { row: center, col: center },
+      { row: center - 1, col: center },
+      { row: center + 1, col: center },
+      { row: center, col: center - 1 },
+      { row: center, col: center + 1 },
+    ];
+    const randomCenter = nearCenter[Math.floor(Math.random() * nearCenter.length)];
+    return { position: randomCenter, player };
+  }
+
+  // 否则随机选择
+  const randomPosition = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  return { position: randomPosition, player };
+};
+
+// 中等AI：基于位置评估
+const getGomokuMediumAI = (board: GomokuBoard, availableMoves: Position[], player: "black" | "white"): GomokuMove => {
+  let bestMove = availableMoves[0];
+  let bestScore = -Infinity;
+
+  for (const position of availableMoves) {
+    const score = evaluateGomokuPosition(board, position, player);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = position;
+    }
+  }
+
+  return { position: bestMove, player };
+};
+
+// 困难AI：更深度的搜索和评估
+const getGomokuHardAI = (board: GomokuBoard, availableMoves: Position[], player: "black" | "white"): GomokuMove => {
+  // 先检查能否立即获胜
+  for (const position of availableMoves) {
+    const testBoard = makeGomokuMove(board, { position, player });
+    if (checkGomokuWinner(testBoard) === player) {
+      return { position, player };
+    }
+  }
+
+  // 检查是否需要阻止对手获胜
+  const opponent = player === "black" ? "white" : "black";
+  for (const position of availableMoves) {
+    const testBoard = makeGomokuMove(board, { position, player: opponent });
+    if (checkGomokuWinner(testBoard) === opponent) {
+      return { position, player };
+    }
+  }
+
+  // 使用更好的评估算法
+  let bestMove = availableMoves[0];
+  let bestScore = -Infinity;
+
+  // 限制搜索范围以提高性能（只考虑已有棋子周围的位置）
+  const candidatePositions = filterNearbyPositions(board, availableMoves);
+
+  for (const position of candidatePositions) {
+    let score = evaluateGomokuPosition(board, position, player);
+
+    // 对每个候选位置进行一步前瞻
+    const testBoard = makeGomokuMove(board, { position, player });
+    const futureOpponentMoves = getGomokuAvailableMoves(testBoard);
+
+    // 评估对手最佳回应
+    let bestOpponentScore = -Infinity;
+    for (let i = 0; i < Math.min(5, futureOpponentMoves.length); i++) {
+      const opponentPos = futureOpponentMoves[i];
+      const opponentScore = evaluateGomokuPosition(testBoard, opponentPos, opponent);
+      bestOpponentScore = Math.max(bestOpponentScore, opponentScore);
+    }
+
+    score -= bestOpponentScore * 0.5; // 减少对手的最佳得分影响
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = position;
+    }
+  }
+
+  return { position: bestMove, player };
+};
+
+// 过滤出已有棋子附近的位置（提高AI性能）
+const filterNearbyPositions = (board: GomokuBoard, availableMoves: Position[]): Position[] => {
+  if (availableMoves.length === 225) {
+    // 空棋盘
+    return [{ row: 7, col: 7 }]; // 返回中心位置
+  }
+
+  const nearbyPositions: Position[] = [];
+  const searchRadius = 2;
+
+  for (const move of availableMoves) {
+    let hasNearbyPiece = false;
+
+    for (let deltaRow = -searchRadius; deltaRow <= searchRadius; deltaRow++) {
+      for (let deltaCol = -searchRadius; deltaCol <= searchRadius; deltaCol++) {
+        const checkRow = move.row + deltaRow;
+        const checkCol = move.col + deltaCol;
+
+        if (isGomokuInBounds(checkRow, checkCol) && board[checkRow][checkCol] !== null) {
+          hasNearbyPiece = true;
+          break;
+        }
+      }
+      if (hasNearbyPiece) break;
+    }
+
+    if (hasNearbyPiece) {
+      nearbyPositions.push(move);
+    }
+  }
+
+  return nearbyPositions.length > 0 ? nearbyPositions : availableMoves.slice(0, 10);
 };

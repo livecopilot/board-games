@@ -58,7 +58,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       id: 'gomoku',
       title: '五子棋',
       icon: '⚫',
-      available: false,
+      available: true,
       color: '#ff8000',
     },
   ];

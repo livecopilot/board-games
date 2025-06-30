@@ -2,7 +2,7 @@
  * @Author: changwj yoursfengzhilian@gmail.com
  * @Date: 2025-06-27 12:45:37
  * @LastEditors: changwj yoursfengzhilian@gmail.com
- * @LastEditTime: 2025-06-27 14:59:37
+ * @LastEditTime: 2025-06-30 13:58:44
  * @FilePath: /board-games/src/types/index.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -108,4 +108,22 @@ export interface ChessGameState {
   isInCheck?: boolean; // 是否被将军
   lastMove?: ChessMove;
   moveHistory: ChessMove[];
+}
+
+// 五子棋相关类型
+export type GomokuPiece = "black" | "white" | null;
+export type GomokuBoard = GomokuPiece[][];
+
+export interface GomokuMove {
+  position: Position;
+  player: "black" | "white";
+}
+
+export interface GomokuGameState {
+  board: GomokuBoard;
+  currentPlayer: "black" | "white";
+  isGameOver: boolean;
+  winner: "black" | "white" | "draw" | null;
+  lastMove?: GomokuMove;
+  moveHistory: GomokuMove[];
 }

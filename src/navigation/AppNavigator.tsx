@@ -4,6 +4,7 @@ import HomeScreen from '../screens/HomeScreen';
 import TicTacToeScreen from '../screens/TicTacToeScreen';
 import CheckersScreen from '../screens/CheckersScreen';
 import ChessScreen from '../screens/ChessScreen';
+import GomokuScreen from '../screens/GomokuScreen';
 import type { RootStackParamList } from '../types/navigation';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -57,6 +58,14 @@ const AppNavigator = () => {
         component={ChessScreen}
         options={{
           headerShown: false, // 象棋页面也隐藏导航栏，使用自定义顶部栏
+          gestureEnabled: false, // 禁用手势返回，强制使用确认弹框
+        }}
+      />
+      <Stack.Screen 
+        name="Gomoku" 
+        component={GomokuScreen}
+        options={{
+          headerShown: false, // 五子棋页面也隐藏导航栏，使用自定义顶部栏
           gestureEnabled: false, // 禁用手势返回，强制使用确认弹框
         }}
       />
