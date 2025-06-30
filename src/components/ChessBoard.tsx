@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Pressable, Text } from 'native-base';
-import { Dimensions } from 'react-native';
+import { Dimensions, Animated } from 'react-native';
 import Svg, { Line, G } from 'react-native-svg';
 import { ChessBoard as ChessBoardType, Position, ChessPiece, ChessMove } from '../types';
 
@@ -272,6 +272,72 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   lastMove = null,
   isAIMode = false
 }) => {
+  // 选中效果闪烁动画
+  const blinkAnimation = useRef(new Animated.Value(1)).current;
+  const pulseAnimation = useRef(new Animated.Value(1)).current;
+  
+  // 移动后效果闪烁动画
+  const moveToBlinkAnimation = useRef(new Animated.Value(1)).current;
+  const moveToPulseAnimation = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const createBlinkAnimation = (animValue: Animated.Value) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(animValue, {
+            toValue: 0.4,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animValue, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    };
+
+    const createPulseAnimation = (animValue: Animated.Value) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(animValue, {
+            toValue: 1.1,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animValue, {
+            toValue: 1,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    };
+
+    const animations: Animated.CompositeAnimation[] = [];
+
+    if (selectedPiece) {
+      const blinkAnim = createBlinkAnimation(blinkAnimation);
+      const pulseAnim = createPulseAnimation(pulseAnimation);
+      animations.push(blinkAnim, pulseAnim);
+      blinkAnim.start();
+      pulseAnim.start();
+    }
+
+    if (lastMove) {
+      const moveToBlinkAnim = createBlinkAnimation(moveToBlinkAnimation);
+      const moveToPulseAnim = createPulseAnimation(moveToPulseAnimation);
+      animations.push(moveToBlinkAnim, moveToPulseAnim);
+      moveToBlinkAnim.start();
+      moveToPulseAnim.start();
+    }
+
+    return () => {
+      animations.forEach(anim => anim.stop());
+    };
+  }, [selectedPiece, lastMove, blinkAnimation, pulseAnimation, moveToBlinkAnimation, moveToPulseAnimation]);
+
   const isSelected = (row: number, col: number) => {
     return selectedPiece?.row === row && selectedPiece?.col === col;
   };
@@ -311,16 +377,36 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         borderRadius="md"
       >
         {/* 可移动位置提示 */}
-        {canMove && (
+        {canMove && !piece && (
           <Box
             position="absolute"
-            w={`${CELL_SIZE * 0.3}px`}
-            h={`${CELL_SIZE * 0.3}px`}
+            left={`${CELL_SIZE * 0.3}px`}
+            top={`${CELL_SIZE * 0.3}px`}
+            w={`${CELL_SIZE * 0.4}px`}
+            h={`${CELL_SIZE * 0.4}px`}
             borderRadius="full"
-            bg="rgba(255, 215, 0, 0.6)"
-            borderWidth={2}
-            borderColor="rgba(255, 215, 0, 0.9)"
-            shadow={4}
+            bg="rgba(255, 215, 0, 0.8)"
+            borderWidth={3}
+            borderColor="rgba(255, 215, 0, 1)"
+            shadow={6}
+            opacity={0.9}
+          />
+        )}
+        
+        {/* 可吃掉棋子的提示 */}
+        {canMove && piece && (
+          <Box
+            position="absolute"
+            left={`${CELL_SIZE * 0.1}px`}
+            top={`${CELL_SIZE * 0.1}px`}
+            w={`${CELL_SIZE * 0.8}px`}
+            h={`${CELL_SIZE * 0.8}px`}
+            borderRadius="full"
+            borderWidth={4}
+            borderColor="rgba(255, 50, 50, 0.9)"
+            bg="transparent"
+            shadow={8}
+            opacity={0.8}
           />
         )}
 
@@ -328,83 +414,176 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         {isMoveFrom && (
           <Box
             position="absolute"
-            w={`${CELL_SIZE * 0.25}px`}
-            h={`${CELL_SIZE * 0.25}px`}
+            left={`${CELL_SIZE * 0.35}px`}
+            top={`${CELL_SIZE * 0.35}px`}
+            w={`${CELL_SIZE * 0.3}px`}
+            h={`${CELL_SIZE * 0.3}px`}
             borderRadius="full"
-            borderWidth={2}
-            borderColor="rgba(255, 215, 0, 0.8)"
+            borderWidth={4}
+            borderColor="rgba(255, 215, 0, 1)"
             bg="transparent"
-            shadow={3}
+            shadow={6}
+            opacity={0.8}
           />
+        )}
+
+        {/* 移动后的闪烁效果 */}
+        {isMoveTo && (
+          <>
+            {/* 外层脉冲效果 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.48),
+                top: CELL_SIZE * (0.5 - 0.48),
+                width: CELL_SIZE * 0.96,
+                height: CELL_SIZE * 0.96,
+                borderRadius: CELL_SIZE * 0.48,
+                borderWidth: 2,
+                borderColor: '#ffd700',
+                backgroundColor: 'transparent',
+                transform: [{ scale: moveToPulseAnimation }],
+                opacity: moveToBlinkAnimation,
+              }}
+            />
+            {/* 内层闪烁效果 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.45),
+                top: CELL_SIZE * (0.5 - 0.45),
+                width: CELL_SIZE * 0.9,
+                height: CELL_SIZE * 0.9,
+                borderRadius: CELL_SIZE * 0.45,
+                borderWidth: 3,
+                borderColor: '#ffd700',
+                backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                shadowColor: '#ffd700',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.8,
+                shadowRadius: 10,
+                elevation: 10,
+                opacity: moveToBlinkAnimation,
+              }}
+            />
+          </>
         )}
 
         {/* 棋子 */}
         {piece && (
           <Box position="relative">
-            {/* 移动后的发光效果 */}
-            {isMoveTo && (
-              <Box
-                position="absolute"
-                w={`${CELL_SIZE * 0.9}px`}
-                h={`${CELL_SIZE * 0.9}px`}
-                borderRadius="full"
-                borderWidth={2}
-                borderColor="rgba(255, 215, 0, 0.6)"
-                bg="transparent"
-                left={`${-CELL_SIZE * 0.05}px`}
-                top={`${-CELL_SIZE * 0.05}px`}
-                shadow={6}
-              />
-            )}
-            
+            {/* 棋子外环装饰 */}
             <Box
-              w={`${CELL_SIZE * 0.8}px`}
-              h={`${CELL_SIZE * 0.8}px`}
+              w={`${CELL_SIZE * 0.85}px`}
+              h={`${CELL_SIZE * 0.85}px`}
               borderRadius="full"
-              bg={piece.player === 'red' ? 'rgba(255, 100, 100, 0.95)' : 'rgba(60, 60, 60, 0.95)'}
-              borderWidth={selected ? 4 : isMoveTo ? 4 : 3}
-              borderColor={selected ? '#ffd700' : isMoveTo ? '#ffd700' : piece.player === 'red' ? '#cc0000' : '#333333'}
+              bg={piece.player === 'red' ? '#B91C1C' : '#374151'}
+              borderWidth={selected ? 3 : isMoveTo ? 3 : 2}
+              borderColor={selected ? '#10B981' : isMoveTo ? '#ffd700' : piece.player === 'red' ? '#8B0000' : '#000000'}
               alignItems="center"
               justifyContent="center"
               shadow={isMoveTo ? 8 : 6}
               position="relative"
             >
-              <Text
-                fontSize={`${Math.max(14, CELL_SIZE * 0.35)}px`}
-                fontWeight="bold"
-                color={piece.player === 'red' ? '#800000' : 'white'}
-                fontFamily="mono"
-                style={!isAIMode && piece.player === 'black' ? { transform: [{ rotate: '180deg' }] } : {}}
-              >
-                {getPieceText(piece)}
-              </Text>
-
-              {/* 棋子内部高光 */}
+              {/* 棋子主体 */}
               <Box
-                position="absolute"
-                top={2}
-                left={2}
-                w={`${CELL_SIZE * 0.25}px`}
-                h={`${CELL_SIZE * 0.25}px`}
+                w={`${CELL_SIZE * 0.72}px`}
+                h={`${CELL_SIZE * 0.72}px`}
                 borderRadius="full"
-                bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.3)'}
-              />
+                bg={piece.player === 'red' ? '#FEE2E2' : '#F3F4F6'}
+                borderWidth={2}
+                borderColor={piece.player === 'red' ? '#DC2626' : '#6B7280'}
+                alignItems="center"
+                justifyContent="center"
+                shadow={4}
+                position="relative"
+              >
+                {/* 棋子文字 */}
+                <Text
+                  fontSize={`${Math.max(14, CELL_SIZE * 0.32)}px`}
+                  fontWeight="900"
+                  color={piece.player === 'red' ? '#7F1D1D' : '#1F2937'}
+                  fontFamily="serif"
+                  style={!isAIMode && piece.player === 'black' ? { transform: [{ rotate: '180deg' }] } : {}}
+                  textAlign="center"
+                >
+                  {getPieceText(piece)}
+                </Text>
+
+                {/* 棋子内边框装饰 */}
+                <Box
+                  position="absolute"
+                  w={`${CELL_SIZE * 0.6}px`}
+                  h={`${CELL_SIZE * 0.6}px`}
+                  borderRadius="full"
+                  borderWidth={1}
+                  borderColor={piece.player === 'red' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(107, 114, 128, 0.2)'}
+                />
+                
+                {/* 棋子纹理效果 */}
+                <Box
+                  position="absolute"
+                  w={`${CELL_SIZE * 0.5}px`}
+                  h={`${CELL_SIZE * 0.5}px`}
+                  borderRadius="full"
+                  borderWidth={0.5}
+                  borderColor={piece.player === 'red' ? 'rgba(220, 38, 38, 0.15)' : 'rgba(107, 114, 128, 0.15)'}
+                />
+
+                {/* 上部光影效果 */}
+                <Box
+                  position="absolute"
+                  top={`${CELL_SIZE * 0.08}px`}
+                  w={`${CELL_SIZE * 0.5}px`}
+                  h={`${CELL_SIZE * 0.2}px`}
+                  borderRadius="full"
+                  bg={piece.player === 'red' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}
+                />
+              </Box>
             </Box>
           </Box>
         )}
 
         {/* 选中效果 */}
         {selected && (
-          <Box
-            position="absolute"
-            w={`${CELL_SIZE * 0.9}px`}
-            h={`${CELL_SIZE * 0.9}px`}
-            borderRadius="full"
-            borderWidth={3}
-            borderColor="#ffd700"
-            bg="rgba(255, 215, 0, 0.2)"
-            shadow={8}
-          />
+          <>
+            {/* 外层脉冲效果 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.48),
+                top: CELL_SIZE * (0.5 - 0.48),
+                width: CELL_SIZE * 0.96,
+                height: CELL_SIZE * 0.96,
+                borderRadius: CELL_SIZE * 0.48,
+                borderWidth: 2,
+                borderColor: '#10B981',
+                backgroundColor: 'transparent',
+                transform: [{ scale: pulseAnimation }],
+                opacity: blinkAnimation,
+              }}
+            />
+            {/* 内层闪烁效果 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.45),
+                top: CELL_SIZE * (0.5 - 0.45),
+                width: CELL_SIZE * 0.9,
+                height: CELL_SIZE * 0.9,
+                borderRadius: CELL_SIZE * 0.45,
+                borderWidth: 4,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                shadowColor: '#10B981',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.9,
+                shadowRadius: 12,
+                elevation: 12,
+                opacity: blinkAnimation,
+              }}
+            />
+          </>
         )}
       </Pressable>
     );
