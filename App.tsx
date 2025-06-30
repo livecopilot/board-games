@@ -1,3 +1,11 @@
+/*
+ * @Author: changwj yoursfengzhilian@gmail.com
+ * @Date: 2025-06-27 12:51:39
+ * @LastEditors: changwj yoursfengzhilian@gmail.com
+ * @LastEditTime: 2025-06-30 15:06:12
+ * @FilePath: /board-games/App.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 /**
  * 棋类游戏 React Native App
  * 专为亲子对弈设计
@@ -8,6 +16,7 @@
 import React from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NativeBaseProvider, extendTheme } from 'native-base';
 import { enableScreens } from 'react-native-screens';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -78,15 +87,18 @@ function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <NativeBaseProvider theme={theme}>
-      <NavigationContainer>
-        <StatusBar 
-          barStyle="light-content" 
-          backgroundColor="#000015"
-        />
-        <AppNavigator />
-      </NavigationContainer>
-    </NativeBaseProvider>
+    <SafeAreaProvider style={{ backgroundColor: '#000015' }}>
+      <NativeBaseProvider theme={theme}>
+        <NavigationContainer>
+          <StatusBar 
+            barStyle="light-content" 
+            backgroundColor="#000015"
+            translucent={false}
+          />
+          <AppNavigator />
+        </NavigationContainer>
+      </NativeBaseProvider>
+    </SafeAreaProvider>
   );
 }
 

@@ -4,6 +4,21 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        
+        <!-- 状态栏设置 -->
+        <item name="android:statusBarColor">#000015</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- 导航栏设置 - 控制手势提示线区域颜色 -->
+        <item name="android:navigationBarColor">#000015</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- 确保导航栏不透明 -->
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        
+        <!-- 启用边到边显示 -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
 </resources>
