@@ -105,14 +105,14 @@ const ChessControls: React.FC<ChessControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg="rgba(255, 215, 0, 0.1)"
+            bg={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.2)" : "rgba(255, 215, 0, 0.1)"}
             borderWidth={2}
-            borderColor="rgba(255, 215, 0, 0.3)"
+            borderColor={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.6)" : "rgba(255, 215, 0, 0.3)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={2}
+            shadow={!isGameOver && currentPlayer === 'red' && !isAIThinking ? 3 : 2}
             mt={2}
           >
             <Text
@@ -127,29 +127,18 @@ const ChessControls: React.FC<ChessControlsProps> = ({
               {getStatusText()}
             </Text>
 
-            {/* 当前玩家指示器 */}
+            {/* 玩家标识 */}
             {!isGameOver && !isAIThinking && (
               <VStack alignItems="center" mt={1} space={0.5}>
-                <HStack alignItems="center" space={1}>
-                  <Box
-                    w="12px"
-                    h="12px"
-                    borderRadius="full"
-                    bg={currentPlayer === 'red' ? '#ff3030' : '#303030'}
-                    borderWidth={1}
-                    borderColor={currentPlayer === 'red' ? '#ff6060' : '#606060'}
-                    shadow={2}
-                  />
-                  <Text
-                    fontSize="xs"
-                    color={currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
-                    fontFamily="mono"
-                  >
-                    {isAIMode 
-                      ? '红方（你）' 
-                      : '红方（我方）'}
-                  </Text>
-                </HStack>
+                <Text
+                  fontSize="xs"
+                  color={currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                  fontFamily="mono"
+                >
+                  {isAIMode 
+                    ? '红方（你）' 
+                    : '红方（我方）'}
+                </Text>
               </VStack>
             )}
 

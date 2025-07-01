@@ -205,14 +205,14 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                 {/* 对方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
-                    bg="rgba(255, 255, 255, 0.05)"
+                    bg={gameState.currentPlayer === 'black' ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}
                     borderWidth={1}
-                    borderColor="rgba(255, 0, 128, 0.3)"
+                    borderColor={gameState.currentPlayer === 'black' ? "rgba(255, 0, 128, 0.6)" : "rgba(255, 0, 128, 0.3)"}
                     borderRadius="lg"
                     p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={2}
+                    shadow={gameState.currentPlayer === 'black' ? 3 : 2}
                     mt={2}
                   >
                     {/* 游戏状态显示 */}
@@ -256,39 +256,24 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                           {gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
                         </Text>
                         
-                        {/* 当前玩家指示器 */}
-                        {!gameState.isGameOver && (
-                          <VStack alignItems="center" mt={0.5} space={0.5}>
-                            <HStack alignItems="center" space={1}>
-                              <Box
-                                w="12px"
-                                h="12px"
-                                borderRadius="full"
-                                bg="#303030"
-                                borderWidth={1}
-                                borderColor={gameState.currentPlayer === 'black' ? '#00ff88' : '#606060'}
-                                shadow={2}
-                              />
-                              <Text
-                                fontSize="xs"
-                                color={gameState.currentPlayer === 'black' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
-                                fontFamily="mono"
-                              >
-                                黑方（我方）
-                              </Text>
-                            </HStack>
-                            
-                            {gameState.mustCapture && gameState.currentPlayer === 'black' && (
-                              <Text
-                                fontSize="xs"
-                                color="#ff8000"
-                                fontFamily="mono"
-                                textAlign="center"
-                              >
-                                ⚡ 必须继续跳跃吃子
-                              </Text>
-                            )}
-                          </VStack>
+                        <Text
+                          fontSize="xs"
+                          color={gameState.currentPlayer === 'black' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                          fontFamily="mono"
+                          textAlign="center"
+                        >
+                          黑方（我方）
+                        </Text>
+                        
+                        {gameState.mustCapture && gameState.currentPlayer === 'black' && (
+                          <Text
+                            fontSize="xs"
+                            color="#ff8000"
+                            fontFamily="mono"
+                            textAlign="center"
+                          >
+                            ⚡ 必须继续跳跃吃子
+                          </Text>
                         )}
                       </VStack>
                     )}

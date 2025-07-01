@@ -91,14 +91,14 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg="rgba(139, 69, 19, 0.1)"
+            bg={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.1)"}
             borderWidth={2}
-            borderColor="rgba(139, 69, 19, 0.3)"
+            borderColor={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.6)" : "rgba(139, 69, 19, 0.3)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={3}
+            shadow={!isGameOver && currentPlayer === 'black' && !isAIThinking ? 4 : 3}
             mt={2}
           >
             <Text
@@ -111,30 +111,26 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
               {getStatusText()}
             </Text>
 
-            {/* 当前玩家指示器 */}
+            {/* 玩家标识 */}
             {!isGameOver && !isAIThinking && (
               <VStack alignItems="center" mt={1} space={1}>
-                <HStack alignItems="center" space={2}>
-                  <Box
-                    w="14px"
-                    h="14px"
-                    borderRadius="full"
-                    bg={currentPlayer === 'black' ? '#2d2d2d' : '#ffffff'}
-                    borderWidth={2}
-                    borderColor={currentPlayer === 'black' ? '#404040' : '#e0e0e0'}
-                    shadow={2}
-                  />
-                  <Text
-                    fontSize="xs"
-                    color="white"
-                    fontFamily="mono"
-                  >
-                    {isAIMode 
-                      ? '黑棋（你）' 
-                      : '黑棋（我方）'}
-                  </Text>
-                </HStack>
-                
+                <Text
+                  fontSize="xs"
+                  color="white"
+                  fontFamily="mono"
+                >
+                  {isAIMode 
+                    ? '黑棋（你）' 
+                    : '黑棋（我方）'}
+                </Text>
+                <Text
+                  fontSize="xs"
+                  color="rgba(255, 255, 255, 0.6)"
+                  fontFamily="mono"
+                  textAlign="center"
+                >
+                  {isAIMode ? '人机对战模式' : '本地双人对战'}
+                </Text>
               </VStack>
             )}
 

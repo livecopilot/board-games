@@ -88,14 +88,14 @@ const GameControls: React.FC<GameControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg="rgba(255, 255, 255, 0.05)"
+            bg={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}
             borderWidth={1}
-            borderColor="rgba(0, 255, 136, 0.3)"
+            borderColor={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(0, 255, 136, 0.6)" : "rgba(0, 255, 136, 0.3)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={2}
+            shadow={!isGameOver && currentPlayer === 'X' && !isAIThinking ? 3 : 2}
             mt={2}
           >
             <Text
@@ -110,27 +110,18 @@ const GameControls: React.FC<GameControlsProps> = ({
               {getStatusText()}
             </Text>
             
-            {/* 当前玩家指示器 */}
+            {/* 玩家标识 */}
             {!isGameOver && !isAIThinking && (
               <VStack alignItems="center" mt={1} space={0.5}>
-                <HStack alignItems="center" space={1}>
-                  <Text
-                    fontSize="md"
-                    fontWeight="bold"
-                    color={currentPlayer === 'X' ? '#00ff88' : '#ff0080'}
-                  >
-                    {currentPlayer === 'X' ? 'X' : 'O'}
-                  </Text>
-                  <Text
-                    fontSize="xs"
-                    color={currentPlayer === 'X' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
-                    fontFamily="mono"
-                  >
-                    {isAIMode 
-                      ? '玩家X（你）' 
-                      : '玩家X（我方）'}
-                  </Text>
-                </HStack>
+                <Text
+                  fontSize="xs"
+                  color={currentPlayer === 'X' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                  fontFamily="mono"
+                >
+                  {isAIMode 
+                    ? '玩家X（你）' 
+                    : '玩家X（我方）'}
+                </Text>
               </VStack>
             )}
 

@@ -188,14 +188,14 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                 {/* 对方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
-                    bg="rgba(255, 255, 255, 0.05)"
+                    bg={gameState.currentPlayer === 'O' ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}
                     borderWidth={1}
-                    borderColor="rgba(0, 255, 136, 0.3)"
+                    borderColor={gameState.currentPlayer === 'O' ? "rgba(0, 255, 136, 0.6)" : "rgba(0, 255, 136, 0.3)"}
                     borderRadius="lg"
                     p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={2}
+                    shadow={gameState.currentPlayer === 'O' ? 3 : 2}
                     mt={2}
                   >
                     {/* 游戏状态显示 */}
@@ -239,28 +239,15 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                           {gameState.currentPlayer === 'O' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
                         </Text>
                         
-                        {/* 当前玩家指示器 */}
-                        {!gameState.isGameOver && (
-                          <VStack alignItems="center" mt={0.5} space={0.5}>
-                            <HStack alignItems="center" space={1}>
-                              <Text
-                                fontSize="md"
-                                fontWeight="bold"
-                                color={gameState.currentPlayer === 'O' ? '#ff0080' : 'rgba(255, 0, 128, 0.6)'}
-                              >
-                                O
-                              </Text>
-                              <Text
-                                fontSize="xs"
-                                color={gameState.currentPlayer === 'O' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
-                                fontFamily="mono"
-                              >
-                                玩家O（我方）
-                              </Text>
-                            </HStack>
-                            
-                          </VStack>
-                        )}
+                        <Text
+                          fontSize="xs"
+                          color={gameState.currentPlayer === 'O' ? '#ff0080' : 'rgba(255, 0, 128, 0.6)'}
+                          fontFamily="mono"
+                          textAlign="center"
+                        >
+                          玩家O（我方）
+                        </Text>
+
                       </VStack>
                     )}
                   </Box>
