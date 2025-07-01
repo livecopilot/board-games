@@ -19,6 +19,7 @@ import type { RootStackParamList } from '../types/navigation';
 import { AIDifficulty } from '../types';
 import type { CheckersScreenProps } from '../types/navigation';
 import IconFont from 'react-native-vector-icons/Ionicons';
+import { CommonActions } from '@react-navigation/native';
 
 const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
   const {
@@ -39,11 +40,31 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  // 标记是否已确认退出
+  const [isConfirmedExit, setIsConfirmedExit] = useState(false);
 
   // 设置默认困难难度
   React.useEffect(() => {
     setAIDifficultyLevel(AIDifficulty.HARD);
   }, []);
+
+  // 拦截所有返回操作（包括侧滑返回）
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // 如果已经确认退出，允许正常返回
+      if (isConfirmedExit) {
+        return;
+      }
+      
+      // 阻止默认行为
+      e.preventDefault();
+      
+      // 显示退出确认弹框
+      setShowExitDialog(true);
+    });
+
+    return unsubscribe;
+  }, [navigation, isConfirmedExit]);
 
   const handleBackPress = () => {
     setShowExitDialog(true);
@@ -51,7 +72,11 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
 
   const confirmExit = () => {
     setShowExitDialog(false);
-    navigation.goBack();
+    setIsConfirmedExit(true);
+    // 使用setTimeout确保状态更新完成后再执行goBack
+    setTimeout(() => {
+      navigation.dispatch(CommonActions.goBack());
+    }, 0);
   };
 
   const handleCellPress = (position: { row: number; col: number }) => {

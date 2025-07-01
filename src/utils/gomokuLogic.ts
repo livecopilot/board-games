@@ -147,7 +147,7 @@ export const getGomokuAvailableMoves = (board: GomokuBoard): Position[] => {
 
 // 精确的棋型识别系统
 class PatternMatcher {
-  // 检测指定方向的棋型
+  // 检测指定方向的棋型 - 简化版本，更准确
   static analyzeDirection(
     board: GomokuBoard,
     row: number,
@@ -157,21 +157,21 @@ class PatternMatcher {
     player: "black" | "white"
   ): PatternType[] {
     const patterns: PatternType[] = [];
-    const line = this.getLine(board, row, col, dr, dc, 9);
-    const centerIndex = 4; // 中心位置
 
-    // 在中心位置放上当前玩家的棋子来检测模式
-    const testLine = [...line];
-    testLine[centerIndex] = player;
+    // 检查当前位置放置棋子后的各种模式
+    const tempBoard = makeGomokuMove(board, { position: { row, col }, player });
 
-    // 分析各种长度的子串
-    for (let len = 5; len <= 9; len++) {
-      const startIdx = Math.max(0, centerIndex - len + 1);
-      const endIdx = Math.min(line.length - len, centerIndex);
+    // 检查4个方向的连续情况
+    const directions = [
+      [1, 0], // 垂直
+      [0, 1], // 水平
+      [1, 1], // 对角线
+      [1, -1], // 反对角线
+    ];
 
-      for (let i = startIdx; i <= endIdx; i++) {
-        const substring = testLine.slice(i, i + len);
-        const pattern = this.matchPattern(substring, player);
+    for (const [deltaR, deltaC] of directions) {
+      if (deltaR === dr && deltaC === dc) {
+        const pattern = this.checkLinePattern(tempBoard, row, col, deltaR, deltaC, player);
         if (pattern) {
           patterns.push(pattern);
         }
@@ -179,6 +179,113 @@ class PatternMatcher {
     }
 
     return patterns;
+  }
+
+  // 检查一条线上的模式
+  static checkLinePattern(
+    board: GomokuBoard,
+    row: number,
+    col: number,
+    dr: number,
+    dc: number,
+    player: "black" | "white"
+  ): PatternType | null {
+    const opponent = player === "black" ? "white" : "black";
+
+    // 向两个方向扫描，统计连续棋子
+    let count = 1; // 包含当前位置
+    let leftBlocked = false;
+    let rightBlocked = false;
+    let leftEmpty = 0;
+    let rightEmpty = 0;
+
+    // 向前扫描
+    let steps = 1;
+    while (steps <= 4) {
+      const r = row + dr * steps;
+      const c = col + dc * steps;
+
+      if (!isInBounds(r, c, 15, 15)) {
+        rightBlocked = true;
+        break;
+      }
+
+      const piece = board[r][c];
+      if (piece === player) {
+        count++;
+      } else if (piece === opponent) {
+        rightBlocked = true;
+        break;
+      } else {
+        rightEmpty++;
+        if (rightEmpty === 1) {
+          // 检查空位后是否还有己方棋子
+          const nextR = r + dr;
+          const nextC = c + dc;
+          if (isInBounds(nextR, nextC, 15, 15) && board[nextR][nextC] === player) {
+            count++; // 跳跃模式
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+      steps++;
+    }
+
+    // 向后扫描
+    steps = 1;
+    while (steps <= 4) {
+      const r = row - dr * steps;
+      const c = col - dc * steps;
+
+      if (!isInBounds(r, c, 15, 15)) {
+        leftBlocked = true;
+        break;
+      }
+
+      const piece = board[r][c];
+      if (piece === player) {
+        count++;
+      } else if (piece === opponent) {
+        leftBlocked = true;
+        break;
+      } else {
+        leftEmpty++;
+        if (leftEmpty === 1) {
+          // 检查空位后是否还有己方棋子
+          const nextR = r - dr;
+          const nextC = c - dc;
+          if (isInBounds(nextR, nextC, 15, 15) && board[nextR][nextC] === player) {
+            count++; // 跳跃模式
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+      steps++;
+    }
+
+    // 根据连子数和阻挡情况判断棋型
+    const openEnds = (!leftBlocked ? 1 : 0) + (!rightBlocked ? 1 : 0);
+
+    if (count >= 5) {
+      return PatternType.FIVE;
+    } else if (count === 4) {
+      if (openEnds === 2) return PatternType.LIVE_FOUR;
+      if (openEnds === 1) return PatternType.RUSH_FOUR;
+    } else if (count === 3) {
+      if (openEnds === 2) return PatternType.LIVE_THREE;
+      if (openEnds === 1) return PatternType.SLEEP_THREE;
+    } else if (count === 2) {
+      if (openEnds === 2) return PatternType.LIVE_TWO;
+      if (openEnds === 1) return PatternType.SLEEP_TWO;
+    }
+
+    return null;
   }
 
   // 获取指定方向的棋子序列
@@ -207,7 +314,7 @@ class PatternMatcher {
     return line;
   }
 
-  // 模式匹配算法
+  // 保留原有的模式匹配算法作为备用
   static matchPattern(line: (GomokuPiece | "boundary")[], player: "black" | "white"): PatternType | null {
     const len = line.length;
     const opponent = player === "black" ? "white" : "black";
@@ -315,18 +422,24 @@ class PatternMatcher {
   }
 }
 
-// 威胁分析器
+// 威胁分析器 - 重写版本，更准确的威胁识别
 class ThreatAnalyzer {
-  // 分析位置的威胁等级
+  // 分析位置的威胁等级 - 简化版本
   static analyzeThreat(board: GomokuBoard, position: Position, player: "black" | "white"): number {
     let totalScore = 0;
     const { row, col } = position;
 
-    for (const [dr, dc] of DIRECTIONS) {
-      const patterns = PatternMatcher.analyzeDirection(board, row, col, dr, dc, player);
-      for (const pattern of patterns) {
-        totalScore += PATTERN_SCORES[pattern];
-      }
+    // 检查4个方向
+    const directions = [
+      [1, 0], // 垂直
+      [0, 1], // 水平
+      [1, 1], // 对角线
+      [1, -1], // 反对角线
+    ];
+
+    for (const [dr, dc] of directions) {
+      const score = this.analyzeDirectionThreat(board, row, col, dr, dc, player);
+      totalScore += score;
     }
 
     // 位置价值加成
@@ -335,18 +448,105 @@ class ThreatAnalyzer {
     return totalScore;
   }
 
+  // 分析单个方向的威胁
+  static analyzeDirectionThreat(
+    board: GomokuBoard,
+    row: number,
+    col: number,
+    dr: number,
+    dc: number,
+    player: "black" | "white"
+  ): number {
+    const opponent = player === "black" ? "white" : "black";
+
+    // 模拟在该位置放置棋子
+    const tempBoard = [...board.map((row) => [...row])];
+    tempBoard[row][col] = player;
+
+    // 统计连续棋子数
+    let count = 1; // 包含当前位置
+    let leftOpen = true;
+    let rightOpen = true;
+
+    // 向前扫描
+    for (let i = 1; i <= 4; i++) {
+      const r = row + dr * i;
+      const c = col + dc * i;
+
+      if (!isInBounds(r, c, 15, 15)) {
+        rightOpen = false;
+        break;
+      }
+
+      const piece = tempBoard[r][c];
+      if (piece === player) {
+        count++;
+      } else if (piece === opponent) {
+        rightOpen = false;
+        break;
+      } else {
+        break; // 空位，停止计数
+      }
+    }
+
+    // 向后扫描
+    for (let i = 1; i <= 4; i++) {
+      const r = row - dr * i;
+      const c = col - dc * i;
+
+      if (!isInBounds(r, c, 15, 15)) {
+        leftOpen = false;
+        break;
+      }
+
+      const piece = tempBoard[r][c];
+      if (piece === player) {
+        count++;
+      } else if (piece === opponent) {
+        leftOpen = false;
+        break;
+      } else {
+        break; // 空位，停止计数
+      }
+    }
+
+    // 根据连子数和开放状态计算分数
+    const openEnds = (leftOpen ? 1 : 0) + (rightOpen ? 1 : 0);
+
+    if (count >= 5) {
+      return 100000; // 连五
+    } else if (count === 4) {
+      if (openEnds === 2) return 10000; // 活四
+      if (openEnds === 1) return 1000; // 冲四
+    } else if (count === 3) {
+      if (openEnds === 2) return 1000; // 活三
+      if (openEnds === 1) return 100; // 眠三
+    } else if (count === 2) {
+      if (openEnds === 2) return 100; // 活二
+      if (openEnds === 1) return 10; // 眠二
+    }
+
+    return 0;
+  }
+
   // 检测必胜威胁（活四、双三等）
   static checkVCFThreat(board: GomokuBoard, position: Position, player: "black" | "white"): boolean {
     const { row, col } = position;
     let liveFourCount = 0;
     let liveThreeCount = 0;
 
-    for (const [dr, dc] of DIRECTIONS) {
-      const patterns = PatternMatcher.analyzeDirection(board, row, col, dr, dc, player);
-      for (const pattern of patterns) {
-        if (pattern === PatternType.LIVE_FOUR) liveFourCount++;
-        if (pattern === PatternType.LIVE_THREE) liveThreeCount++;
-      }
+    const directions = [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [1, -1],
+    ];
+
+    for (const [dr, dc] of directions) {
+      const score = this.analyzeDirectionThreat(board, row, col, dr, dc, player);
+
+      if (score >= 10000) liveFourCount++; // 活四
+      if (score >= 1000 && score < 10000) liveThreeCount++; // 活三
     }
 
     return liveFourCount > 0 || liveThreeCount >= 2;
@@ -360,17 +560,25 @@ class ThreatAnalyzer {
     return Math.max(0, 8 - distance);
   }
 
-  // 检测防守紧急程度
+  // 检测防守紧急程度 - 简化版本
   static getDefensePriority(board: GomokuBoard, position: Position, opponent: "black" | "white"): number {
+    // 检查对手在该位置是否能直接获胜
     const testBoard = makeGomokuMove(board, { position, player: opponent });
-
-    // 如果对手能直接获胜，防守优先级最高
     if (checkGomokuWinner(testBoard) === opponent) {
-      return 1000000;
+      return 1000000; // 最高防守优先级
     }
 
-    // 检测对手威胁
-    return this.analyzeThreat(board, position, opponent);
+    // 检查对手威胁
+    const threatScore = this.analyzeThreat(board, position, opponent);
+
+    // 特别关注活四和活三的威胁
+    if (threatScore >= 10000) {
+      return 500000; // 对手活四，必须防守
+    } else if (threatScore >= 1000) {
+      return 100000; // 对手活三，高优先级防守
+    }
+
+    return threatScore;
   }
 }
 
@@ -648,16 +856,34 @@ const getGomokuEasyAI = (board: GomokuBoard, availableMoves: Position[], player:
     return { position: { row: 7, col: 7 }, player };
   }
 
+  const opponent = player === "black" ? "white" : "black";
+
+  // 立即获胜检查
+  for (const position of availableMoves) {
+    const testBoard = makeGomokuMove(board, { position, player });
+    if (checkGomokuWinner(testBoard) === player) {
+      return { position, player };
+    }
+  }
+
+  // 防守检查 - 阻止对手获胜
+  for (const position of availableMoves) {
+    const testBoard = makeGomokuMove(board, { position, player: opponent });
+    if (checkGomokuWinner(testBoard) === opponent) {
+      return { position, player };
+    }
+  }
+
   // 30%概率选择最佳位置，70%随机
   if (Math.random() < 0.3) {
     let bestMove = availableMoves[0];
     let bestScore = -Infinity;
 
-    for (const position of availableMoves.slice(0, 10)) {
+    for (const position of availableMoves.slice(0, Math.min(10, availableMoves.length))) {
       // 只考虑前10个位置
-      const score =
-        ThreatAnalyzer.analyzeThreat(board, position, player) +
-        ThreatAnalyzer.getDefensePriority(board, position, player === "black" ? "white" : "black") * 0.5;
+      const attackScore = ThreatAnalyzer.analyzeThreat(board, position, player);
+      const defenseScore = ThreatAnalyzer.getDefensePriority(board, position, opponent);
+      const score = attackScore + defenseScore * 0.5;
 
       if (score > bestScore) {
         bestScore = score;
@@ -674,7 +900,7 @@ const getGomokuEasyAI = (board: GomokuBoard, availableMoves: Position[], player:
   return { position: randomPosition, player };
 };
 
-// 中等AI：基于威胁分析的策略
+// 中等AI：基于威胁分析的策略 - 增强版本
 const getGomokuMediumAI = (board: GomokuBoard, availableMoves: Position[], player: "black" | "white"): GomokuMove => {
   const opponent = player === "black" ? "white" : "black";
 
@@ -699,7 +925,41 @@ const getGomokuMediumAI = (board: GomokuBoard, availableMoves: Position[], playe
     }
   }
 
-  // 威胁分析
+  // 防守活四威胁
+  for (const position of availableMoves) {
+    const opponentThreat = ThreatAnalyzer.getDefensePriority(board, position, opponent);
+    if (opponentThreat >= 500000) {
+      // 对手活四
+      return { position, player };
+    }
+  }
+
+  // 创造自己的活四
+  for (const position of availableMoves) {
+    const myThreat = ThreatAnalyzer.analyzeThreat(board, position, player);
+    if (myThreat >= 10000) {
+      // 我方活四
+      return { position, player };
+    }
+  }
+
+  // 防守活三威胁
+  let bestDefenseMove: Position | null = null;
+  let highestDefensePriority = 0;
+
+  for (const position of availableMoves) {
+    const opponentThreat = ThreatAnalyzer.getDefensePriority(board, position, opponent);
+    if (opponentThreat >= 100000 && opponentThreat > highestDefensePriority) {
+      highestDefensePriority = opponentThreat;
+      bestDefenseMove = position;
+    }
+  }
+
+  if (bestDefenseMove) {
+    return { position: bestDefenseMove, player };
+  }
+
+  // 威胁分析 - 寻找最佳攻击位置
   const candidates = GomokuSearchEngine.getCandidateMoves(board);
   let bestMove = candidates[0] || availableMoves[0];
   let bestScore = -Infinity;
@@ -708,15 +968,42 @@ const getGomokuMediumAI = (board: GomokuBoard, availableMoves: Position[], playe
     let score = 0;
 
     // 攻击价值
-    score += ThreatAnalyzer.analyzeThreat(board, position, player);
+    const attackScore = ThreatAnalyzer.analyzeThreat(board, position, player);
+    score += attackScore;
 
     // 防守价值
-    score += ThreatAnalyzer.getDefensePriority(board, position, opponent) * 0.8;
+    const defenseScore = ThreatAnalyzer.getDefensePriority(board, position, opponent);
+    score += defenseScore * 0.8;
 
-    // VCF威胁检查
+    // VCF威胁检查（双三、活四等）
     if (ThreatAnalyzer.checkVCFThreat(board, position, player)) {
       score += 10000;
     }
+
+    // 位置价值（中心控制）
+    score += ThreatAnalyzer.getPositionValue(position) * 2;
+
+    // 连接性评估 - 优先选择与已有棋子相邻的位置
+    let connectionBonus = 0;
+    const directions = [
+      [-1, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, -1],
+      [0, 1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
+    ];
+
+    for (const [dr, dc] of directions) {
+      const r = position.row + dr;
+      const c = position.col + dc;
+      if (isInBounds(r, c, 15, 15) && board[r][c] === player) {
+        connectionBonus += 20;
+      }
+    }
+    score += connectionBonus;
 
     if (score > bestScore) {
       bestScore = score;
