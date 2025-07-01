@@ -158,37 +158,39 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
         <Box alignItems="center" mb={5}>
           {/* 对方控制器（双人模式下显示） */}
           {!isAIMode && (
-            <View style={{ marginBottom: 20, transform: [{ rotate: '180deg' }] }}>
-              <HStack alignItems="flex-start" px={5} space={4} w="100%">
+            <View style={{ marginBottom: 15, transform: [{ rotate: '180deg' }] }}>
+              <HStack alignItems="flex-start" px={4} space={3} w="100%">
                 {/* 对方左侧：游戏状态显示 */}
-                <VStack flex={1} space={3} minH="120px" justifyContent="flex-start">
+                <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
                     bg="rgba(255, 255, 255, 0.05)"
                     borderWidth={1}
                     borderColor="rgba(0, 255, 136, 0.3)"
                     borderRadius="lg"
-                    p={4}
+                    p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={3}
-                    mt={3}
+                    shadow={2}
+                    mt={2}
                   >
                     {/* 游戏状态显示 */}
                     {gameState.isGameOver ? (
-                      <VStack alignItems="center" space={2}>
+                      <VStack alignItems="center" space={1}>
                         <Text
-                          fontSize="xl"
+                          fontSize="md"
                           fontWeight="bold"
                           color={gameState.winner === 'O' ? '#00ff88' : gameState.winner === 'X' ? '#ff3030' : '#ffd700'}
                           fontFamily="mono"
-                          letterSpacing={1}
+                          letterSpacing={0.5}
+                          textAlign="center"
+                          numberOfLines={2}
                         >
                           {gameState.winner === 'O' ? '🎉 玩家O获胜！' : 
                            gameState.winner === 'X' ? '对方获胜' : 
                            '🤝 平局'}
                         </Text>
                         <Text
-                          fontSize="sm"
+                          fontSize="xs"
                           color="rgba(255, 255, 255, 0.7)"
                           fontFamily="mono"
                           textAlign="center"
@@ -199,74 +201,77 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                         </Text>
                       </VStack>
                     ) : (
-                      <VStack alignItems="center" space={2}>
+                      <VStack alignItems="center" space={1}>
                         <Text
-                          fontSize="lg"
+                          fontSize="md"
                           fontWeight="bold"
                           color={gameState.currentPlayer === 'O' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
                           fontFamily="mono"
-                          letterSpacing={1}
+                          letterSpacing={0.5}
+                          textAlign="center"
+                          numberOfLines={2}
                         >
                           {gameState.currentPlayer === 'O' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
                         </Text>
                         
-                        <VStack alignItems="center" space={1}>
-                          <HStack alignItems="center" space={2}>
+                        {/* 当前玩家指示器 */}
+                        {!gameState.isGameOver && (
+                          <VStack alignItems="center" mt={0.5} space={0.5}>
+                            <HStack alignItems="center" space={1}>
+                              <Text
+                                fontSize="md"
+                                fontWeight="bold"
+                                color={gameState.currentPlayer === 'O' ? '#ff0080' : 'rgba(255, 0, 128, 0.6)'}
+                              >
+                                O
+                              </Text>
+                              <Text
+                                fontSize="xs"
+                                color={gameState.currentPlayer === 'O' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                                fontFamily="mono"
+                              >
+                                玩家O（对方）
+                              </Text>
+                            </HStack>
                             <Text
-                              fontSize="lg"
-                              fontWeight="bold"
-                              color={gameState.currentPlayer === 'O' ? '#ff0080' : 'rgba(255, 0, 128, 0.6)'}
-                            >
-                              O
-                            </Text>
-                            <Text
-                              fontSize="sm"
-                              color={gameState.currentPlayer === 'O' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                              fontSize="xs"
+                              color="#00ff88"
                               fontFamily="mono"
+                              textAlign="center"
                             >
-                              玩家 O（对方）
+                              本地双人对战
                             </Text>
-                          </HStack>
-                          <Text
-                            fontSize="xs"
-                            color="#00ff88"
-                            fontFamily="mono"
-                            textAlign="center"
-                          >
-                            本地双人对战
-                          </Text>
-                        </VStack>
+                          </VStack>
+                        )}
                       </VStack>
                     )}
                   </Box>
                 </VStack>
 
                 {/* 对方右侧：简化控制按钮 */}
-                <Box flex={1} mt={3} minH="120px">
-                  <HStack space={2} flexWrap="wrap" alignItems="flex-start">
-                                         {/* 重新开始按钮 */}
-                     <Pressable
-                       onPress={resetGame}
+                <VStack flex={1} mt={2} minH="90px" space={2}>
+                  {/* 操作按钮行 */}
+                  <HStack space={2} w="100%">
+                    {/* 重新开始按钮 */}
+                    <Pressable
+                      onPress={resetGame}
                       bg="rgba(0, 255, 136, 0.2)"
-                      borderWidth={2}
+                      borderWidth={1}
                       borderColor="rgba(0, 255, 136, 0.6)"
                       borderRadius="lg"
-                      px={3}
-                      py={3}
-                      minW="30%"
-                      maxW="48%"
+                      px={2}
+                      py={2}
                       flex={1}
-                      mb={2}
                       alignItems="center"
                       _pressed={{ bg: "rgba(0, 255, 136, 0.3)" }}
-                      shadow={3}
+                      shadow={2}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="refresh" size={14} color="rgba(255, 255, 255, 0.9)" />
+                        <IconFont name="refresh" size={12} color="rgba(255, 255, 255, 0.9)" />
                         <Text
                           color="rgba(255, 255, 255, 0.9)"
                           fontWeight="bold"
-                          fontSize="sm"
+                          fontSize="xs"
                           fontFamily="mono"
                         >
                           重新开始
@@ -279,26 +284,23 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                       onPress={undoMove}
                       isDisabled={!canUndo}
                       bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
-                      borderWidth={2}
+                      borderWidth={1}
                       borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
                       borderRadius="lg"
-                      px={3}
-                      py={3}
-                      minW="30%"
-                      maxW="48%"
+                      px={2}
+                      py={2}
                       flex={1}
-                      mb={2}
                       alignItems="center"
                       _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-                      shadow={canUndo ? 3 : 0}
+                      shadow={canUndo ? 2 : 0}
                       opacity={canUndo ? 1 : 0.5}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="arrow-undo" size={14} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                        <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                         <Text
                           color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                           fontWeight="bold"
-                          fontSize="sm"
+                          fontSize="xs"
                           fontFamily="mono"
                         >
                           撤销
@@ -306,7 +308,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                       </HStack>
                     </Pressable>
                   </HStack>
-                </Box>
+                </VStack>
               </HStack>
             </View>
           )}
