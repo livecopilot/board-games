@@ -38,7 +38,6 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
 
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
-  const [showTips, setShowTips] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
 
   // 设置默认困难难度
@@ -66,8 +65,6 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
       moveTo(position);
     }
   };
-
-
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -166,30 +163,6 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                 </Text>
               </HStack>
             </Pressable>
-            <Pressable
-              onPress={() => setShowTips(true)}
-              _pressed={{ bg: "rgba(255, 128, 0, 0.3)" }}
-              borderRadius="lg"
-              bg="rgba(255, 128, 0, 0.2)"
-              borderWidth={2}
-              borderColor="rgba(255, 128, 0, 0.7)"
-              px={3}
-              py={2}
-              shadow={3}
-            >
-              <HStack alignItems="center" space={1}>
-                <IconFont name="bulb" size={14} color="rgba(255, 255, 255, 0.9)" />
-                <Text
-                  color="rgba(255, 255, 255, 0.9)"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  建议
-                </Text>
-              </HStack>
-            </Pressable>
-
           </HStack>
         </Box>
       </HStack>
@@ -492,118 +465,6 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
               bg="#ff0080"
               _text={{ color: "white", fontWeight: "bold" }}
               _pressed={{ bg: "#cc0066" }}
-              w="100%"
-            >
-              知道了
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* 亲子建议弹框 */}
-      <Modal
-        isVisible={showTips}
-        onBackdropPress={() => setShowTips(false)}
-        onBackButtonPress={() => setShowTips(false)}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(255, 128, 0, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="90%"
-          maxH="80%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(255, 128, 0, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(255, 128, 0, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="#ff8000" fontFamily="mono">
-              亲子游戏建议
-            </Text>
-            <Pressable
-              onPress={() => setShowTips(false)}
-              _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="#ff8000"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <VStack space={3} p={4}>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">🎯</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                跳棋能培养孩子的战略思维和前瞻性
-              </Text>
-            </HStack>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">🤖</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                AI模式适合孩子练习和学习基本策略
-              </Text>
-            </HStack>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">👥</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                双人模式增进亲子互动，培养竞技精神
-              </Text>
-            </HStack>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">🔄</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                使用撤销功能帮助孩子理解错误和改正
-              </Text>
-            </HStack>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">⚡</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                连续跳跃是关键技巧，教导孩子寻找最佳路线
-              </Text>
-            </HStack>
-            <HStack alignItems="center" space={3}>
-              <Text fontSize="lg">👑</Text>
-              <Text fontSize="sm" color="white" flex={1}>
-                让孩子了解棋子升王的重要性和战略价值
-              </Text>
-            </HStack>
-          </VStack>
-
-          {/* 底部按钮 */}
-          <Box
-            bg="rgba(255, 128, 0, 0.05)"
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor="rgba(255, 128, 0, 0.2)"
-            p={4}
-          >
-            <Button
-              onPress={() => setShowTips(false)}
-              bg="#ff8000"
-              _text={{ color: "black", fontWeight: "bold" }}
-              _pressed={{ bg: "#cc6600" }}
               w="100%"
             >
               知道了

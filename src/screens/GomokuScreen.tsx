@@ -32,7 +32,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
 
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
-  const [showTips, setShowTips] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
 
   // 设置默认困难难度
@@ -52,8 +51,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
   const handleCellPress = (position: { row: number; col: number }) => {
     placePiece(position);
   };
-
-
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -149,29 +146,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
                   fontFamily="mono"
                 >
                   规则
-                </Text>
-              </HStack>
-            </Pressable>
-            <Pressable
-              onPress={() => setShowTips(true)}
-              _pressed={{ bg: "rgba(255, 128, 0, 0.3)" }}
-              borderRadius="lg"
-              bg="rgba(255, 128, 0, 0.2)"
-              borderWidth={2}
-              borderColor="rgba(255, 128, 0, 0.7)"
-              px={3}
-              py={2}
-              shadow={3}
-            >
-              <HStack alignItems="center" space={1}>
-                <IconFont name="bulb" size={14} color="rgba(255, 255, 255, 0.9)" />
-                <Text
-                  color="rgba(255, 255, 255, 0.9)"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  技巧
                 </Text>
               </HStack>
             </Pressable>
@@ -448,101 +422,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
                 <Box w={2} h={2} borderRadius="full" bg="rgba(139, 69, 19, 0.9)" />
                 <Text fontSize="sm" color="white" flex={1}>
                   支持人机对战和双人对战模式
-                </Text>
-              </HStack>
-            </VStack>
-          </ScrollView>
-        </Box>
-      </Modal>
-
-      {/* 游戏技巧弹框 */}
-      <Modal
-        isVisible={showTips}
-        onBackdropPress={() => setShowTips(false)}
-        onBackButtonPress={() => setShowTips(false)}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(255, 128, 0, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="90%"
-          maxH="80%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(255, 128, 0, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(255, 128, 0, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="#ff8000" fontFamily="mono">
-              游戏技巧
-            </Text>
-            <Pressable
-              onPress={() => setShowTips(false)}
-              _pressed={{ bg: "rgba(255, 128, 0, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="#ff8000"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <VStack space={3} p={4}>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  开局一般在天元（中心）或其附近落子
-                </Text>
-              </HStack>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  攻守并重：既要形成自己的连线，也要阻止对手
-                </Text>
-              </HStack>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  活三优于死四：活三可形成双四必胜
-                </Text>
-              </HStack>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  控制关键点位，限制对手发展空间
-                </Text>
-              </HStack>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  多线作战：同时在多个方向威胁对手
-                </Text>
-              </HStack>
-              <HStack alignItems="center" space={3}>
-                <Box w={2} h={2} borderRadius="full" bg="#ff8000" />
-                <Text fontSize="sm" color="white" flex={1}>
-                  学会牺牲：有时放弃局部可获得更大优势
                 </Text>
               </HStack>
             </VStack>
