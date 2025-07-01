@@ -203,14 +203,14 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                 {/* 对方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
-                    bg={gameState.currentPlayer === 'black' ? "rgba(255, 215, 0, 0.2)" : "rgba(255, 215, 0, 0.1)"}
+                    bg={gameState.currentPlayer === 'black' ? "rgba(255, 215, 0, 0.3)" : "rgba(255, 215, 0, 0.05)"}
                     borderWidth={2}
-                    borderColor={gameState.currentPlayer === 'black' ? "rgba(255, 215, 0, 0.6)" : "rgba(255, 215, 0, 0.3)"}
+                    borderColor={gameState.currentPlayer === 'black' ? "rgba(255, 215, 0, 0.8)" : "rgba(255, 215, 0, 0.2)"}
                     borderRadius="lg"
                     p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={gameState.currentPlayer === 'black' ? 3 : 2}
+                    shadow={gameState.currentPlayer === 'black' ? 5 : 2}
                     mt={2}
                   >
                     {/* 游戏状态显示 */}

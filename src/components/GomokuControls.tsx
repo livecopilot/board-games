@@ -91,14 +91,14 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.1)"}
+            bg={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.3)" : "rgba(139, 69, 19, 0.05)"}
             borderWidth={2}
-            borderColor={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.6)" : "rgba(139, 69, 19, 0.3)"}
+            borderColor={!isGameOver && currentPlayer === 'black' && !isAIThinking ? "rgba(139, 69, 19, 0.8)" : "rgba(139, 69, 19, 0.2)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={!isGameOver && currentPlayer === 'black' && !isAIThinking ? 4 : 3}
+            shadow={!isGameOver && currentPlayer === 'black' && !isAIThinking ? 5 : 2}
             mt={2}
           >
             <Text

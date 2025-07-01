@@ -105,14 +105,14 @@ const ChessControls: React.FC<ChessControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.2)" : "rgba(255, 215, 0, 0.1)"}
+            bg={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.3)" : "rgba(255, 215, 0, 0.05)"}
             borderWidth={2}
-            borderColor={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.6)" : "rgba(255, 215, 0, 0.3)"}
+            borderColor={!isGameOver && currentPlayer === 'red' && !isAIThinking ? "rgba(255, 215, 0, 0.8)" : "rgba(255, 215, 0, 0.2)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={!isGameOver && currentPlayer === 'red' && !isAIThinking ? 3 : 2}
+            shadow={!isGameOver && currentPlayer === 'red' && !isAIThinking ? 5 : 2}
             mt={2}
           >
             <Text

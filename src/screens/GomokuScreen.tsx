@@ -192,14 +192,14 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
                 {/* 对方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
-                    bg={gameState.currentPlayer === 'white' ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.1)"}
+                    bg={gameState.currentPlayer === 'white' ? "rgba(139, 69, 19, 0.3)" : "rgba(139, 69, 19, 0.05)"}
                     borderWidth={2}
-                    borderColor={gameState.currentPlayer === 'white' ? "rgba(139, 69, 19, 0.6)" : "rgba(139, 69, 19, 0.3)"}
+                    borderColor={gameState.currentPlayer === 'white' ? "rgba(139, 69, 19, 0.8)" : "rgba(139, 69, 19, 0.2)"}
                     borderRadius="lg"
                     p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={gameState.currentPlayer === 'white' ? 4 : 3}
+                    shadow={gameState.currentPlayer === 'white' ? 5 : 2}
                     mt={2}
                   >
                     {/* 游戏状态显示 */}

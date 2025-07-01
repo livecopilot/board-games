@@ -88,14 +88,14 @@ const GameControls: React.FC<GameControlsProps> = ({
         {/* 左侧：游戏状态显示 */}
         <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
-            bg={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}
-            borderWidth={1}
-            borderColor={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(0, 255, 136, 0.6)" : "rgba(0, 255, 136, 0.3)"}
+            bg={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(255, 255, 255, 0.25)" : "rgba(255, 255, 255, 0.02)"}
+            borderWidth={!isGameOver && currentPlayer === 'X' && !isAIThinking ? 2 : 1}
+            borderColor={!isGameOver && currentPlayer === 'X' && !isAIThinking ? "rgba(0, 255, 136, 0.8)" : "rgba(0, 255, 136, 0.2)"}
             borderRadius="lg"
             p={3}
             w="100%"
             alignItems="center"
-            shadow={!isGameOver && currentPlayer === 'X' && !isAIThinking ? 3 : 2}
+            shadow={!isGameOver && currentPlayer === 'X' && !isAIThinking ? 4 : 1}
             mt={2}
           >
             <Text

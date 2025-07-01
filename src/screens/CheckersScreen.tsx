@@ -205,14 +205,14 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                 {/* 对方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
-                    bg={gameState.currentPlayer === 'black' ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}
-                    borderWidth={1}
-                    borderColor={gameState.currentPlayer === 'black' ? "rgba(255, 0, 128, 0.6)" : "rgba(255, 0, 128, 0.3)"}
+                    bg={gameState.currentPlayer === 'black' ? "rgba(255, 255, 255, 0.25)" : "rgba(255, 255, 255, 0.02)"}
+                    borderWidth={gameState.currentPlayer === 'black' ? 2 : 1}
+                    borderColor={gameState.currentPlayer === 'black' ? "rgba(255, 0, 128, 0.8)" : "rgba(255, 0, 128, 0.2)"}
                     borderRadius="lg"
                     p={3}
                     w="100%"
                     alignItems="center"
-                    shadow={gameState.currentPlayer === 'black' ? 3 : 2}
+                    shadow={gameState.currentPlayer === 'black' ? 4 : 1}
                     mt={2}
                   >
                     {/* 游戏状态显示 */}
