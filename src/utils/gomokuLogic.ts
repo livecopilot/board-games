@@ -24,6 +24,20 @@ const PATTERN_SCORES = {
   [PatternType.SLEEP_TWO]: 10,
 };
 
+// 置换表，用于缓存搜索结果
+interface TranspositionEntry {
+  depth: number;
+  score: number;
+  flag: "exact" | "lower" | "upper";
+  bestMove?: Position;
+}
+
+const transpositionTable = new Map<string, TranspositionEntry>();
+
+const getBoardKey = (board: GomokuBoard, player: "black" | "white"): string => {
+  return player + board.map((row) => row.map((p) => (p ? p[0] : "-")).join("")).join("");
+};
+
 // 方向定义
 const DIRECTIONS = [
   [0, 1], // 水平
@@ -433,9 +447,29 @@ class GomokuSearchEngine {
       return { score: 0 };
     }
 
+    const originalAlpha = alpha;
+    const boardKey = getBoardKey(board, player);
+    const cachedEntry = transpositionTable.get(boardKey);
+
+    if (cachedEntry && cachedEntry.depth >= depth) {
+      if (cachedEntry.flag === "exact") {
+        return { score: cachedEntry.score, move: cachedEntry.bestMove };
+      } else if (cachedEntry.flag === "lower") {
+        alpha = Math.max(alpha, cachedEntry.score);
+      } else if (cachedEntry.flag === "upper") {
+        beta = Math.min(beta, cachedEntry.score);
+      }
+      if (alpha >= beta) {
+        return { score: cachedEntry.score, move: cachedEntry.bestMove };
+      }
+    }
+
     const winner = checkGomokuWinner(board);
-    if (winner === player) return { score: 100000 + depth };
-    if (winner && winner !== player) return { score: -100000 - depth };
+    if (winner) {
+      if (winner === player) return { score: 100000 + depth };
+      if (winner === "draw") return { score: 0 };
+      return { score: -100000 - depth };
+    }
 
     if (depth <= 0) {
       return { score: this.evaluateBoard(board, player) };
@@ -474,6 +508,21 @@ class GomokuSearchEngine {
       alpha = Math.max(alpha, score);
       if (alpha >= beta) break; // Alpha-Beta剪枝
     }
+
+    let flag: "exact" | "lower" | "upper" = "upper";
+    if (maxScore > originalAlpha) {
+      flag = "exact";
+    }
+    if (maxScore >= beta) {
+      flag = "lower";
+    }
+
+    transpositionTable.set(boardKey, {
+      depth,
+      score: maxScore,
+      flag,
+      bestMove,
+    });
 
     return { score: maxScore, move: bestMove };
   }

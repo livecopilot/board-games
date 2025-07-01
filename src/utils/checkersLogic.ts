@@ -1,4 +1,12 @@
 // 跳棋游戏逻辑 - 专家级AI实现
+// 困难模式（HARD）的AI采用了多种高级技术，包括：
+// - 迭代加深搜索（Iterative Deepening Search）
+// - Negamax搜索算法（Minimax的变种）及Alpha-Beta剪枝
+// - 置换表（Transposition Table）用于缓存和复用搜索结果
+// - 杀手启发（Killer Heuristics）和历史启发（History Heuristics）进行高效的移动排序
+// - 主变搜索（Principal Variation Search）优化搜索效率
+// - 复杂的棋盘评估函数，综合考虑子力、位置、机动性、开局、残局等多种因素
+// 因此，该AI具有非常高的智能水平。
 import { CheckersBoard, CheckersPiece, CheckersMove, Position, AIDifficulty } from "../types";
 import { getRandomChoice, isInBounds, AI_SEARCH_DEPTHS, deepCopyBoard } from "./common";
 

@@ -1,4 +1,12 @@
 // 中国象棋游戏逻辑
+// 困难模式（HARD）的AI采用了多种高级技术，以实现高水平的棋力：
+// - 迭代加深搜索（Iterative Deepening Search）
+// - Minimax搜索算法及Alpha-Beta剪枝
+// - 置换表（Transposition Table）用于缓存和复用搜索结果
+// - 杀手启发（Killer Heuristics）和历史启发（History Heuristics）进行高效的移动排序
+// - 静态搜索（Quiescence Search）来处理战术序列，避免水平线效应
+// - 基于棋子价值和位置价值表的复杂棋盘评估函数
+// 因此，该AI具有非常高的智能水平。
 import { ChessBoard, ChessPiece, ChessMove, ChessPieceType, Position, AIDifficulty } from "../types";
 import { getRandomChoice, isInBounds, AI_SEARCH_DEPTHS, deepCopyBoard } from "./common";
 

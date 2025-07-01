@@ -105,46 +105,14 @@ const getTicTacToeEasyAI = (availableMoves: Position[]): Position => {
   return getRandomChoice(availableMoves);
 };
 
-// 中等AI：基本策略
+// 中等AI：有一定概率犯错的完美AI
 const getTicTacToeMediumAI = (board: Board, availableMoves: Position[]): Position => {
-  // 检查是否能获胜
-  for (const move of availableMoves) {
-    const testBoard = makeMove(board, move, "O");
-    if (checkWinner(testBoard) === "O") {
-      return move;
-    }
+  // 30%的概率随机移动，70%的概率选择最佳移动
+  if (Math.random() < 0.3) {
+    return getRandomChoice(availableMoves);
   }
-
-  // 检查是否需要阻止对手获胜
-  for (const move of availableMoves) {
-    const testBoard = makeMove(board, move, "X");
-    if (checkWinner(testBoard) === "X") {
-      return move;
-    }
-  }
-
-  // 优先选择中心位置
-  const center = { row: 1, col: 1 };
-  if (availableMoves.some((move) => move.row === center.row && move.col === center.col)) {
-    return center;
-  }
-
-  // 选择角落
-  const corners = [
-    { row: 0, col: 0 },
-    { row: 0, col: 2 },
-    { row: 2, col: 0 },
-    { row: 2, col: 2 },
-  ];
-  const availableCorners = corners.filter((corner) =>
-    availableMoves.some((move) => move.row === corner.row && move.col === corner.col)
-  );
-  if (availableCorners.length > 0) {
-    return getRandomChoice(availableCorners);
-  }
-
-  // 随机选择
-  return getRandomChoice(availableMoves);
+  // 否则，使用完美AI进行移动
+  return getTicTacToeHardAI(board, availableMoves);
 };
 
 // 困难AI：完美的Minimax算法（不可击败）
@@ -173,33 +141,27 @@ const getTicTacToeHardAI = (board: Board, availableMoves: Position[]): Position 
 // 开局书（优化开局性能）
 const getOpeningMove = (board: Board): Position | null => {
   const moveCount = 9 - getAvailableMoves(board).length;
-  
+
   // 第一步：选择中心
   if (moveCount === 0) {
     return { row: 1, col: 1 };
   }
-  
+
   // 第二步：如果对手占了中心，选择角落
   if (moveCount === 1 && board[1][1] === "X") {
     return { row: 0, col: 0 };
   }
-  
+
   // 第二步：如果对手占了角落，选择中心
   if (moveCount === 1 && board[1][1] === null) {
     return { row: 1, col: 1 };
   }
-  
+
   return null;
 };
 
 // 优化的Minimax算法（带Alpha-Beta剪枝）
-const minimax = (
-  board: Board, 
-  depth: number, 
-  isMaximizing: boolean, 
-  alpha: number, 
-  beta: number
-): number => {
+const minimax = (board: Board, depth: number, isMaximizing: boolean, alpha: number, beta: number): number => {
   const winner = checkWinner(board);
 
   // 终端状态评估，考虑深度以优先快速胜利
@@ -230,4 +192,4 @@ const minimax = (
     }
     return minEval;
   }
-}; 
+};
