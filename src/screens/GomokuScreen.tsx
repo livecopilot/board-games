@@ -261,17 +261,10 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
                                 color="white"
                                 fontFamily="mono"
                               >
-                                白棋（对方）
+                                白棋（我方）
                               </Text>
                             </HStack>
-                            <Text
-                              fontSize="xs"
-                              color="rgba(255, 255, 255, 0.6)"
-                              fontFamily="mono"
-                              textAlign="center"
-                            >
-                              本地双人对战
-                            </Text>
+                            
                           </VStack>
                         )}
                       </VStack>

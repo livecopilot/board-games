@@ -272,17 +272,10 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                                 color={gameState.currentPlayer === 'black' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
                                 fontFamily="mono"
                               >
-                                黑方（对方）
+                                黑方（我方）
                               </Text>
                             </HStack>
-                            <Text
-                              fontSize="xs"
-                              color="rgba(255, 215, 0, 0.7)"
-                              fontFamily="mono"
-                              textAlign="center"
-                            >
-                              本地双人对战
-                            </Text>
+                            
                           </VStack>
                         )}
                       </VStack>

@@ -255,17 +255,10 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                                 color={gameState.currentPlayer === 'O' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
                                 fontFamily="mono"
                               >
-                                玩家O（对方）
+                                玩家O（我方）
                               </Text>
                             </HStack>
-                            <Text
-                              fontSize="xs"
-                              color="#00ff88"
-                              fontFamily="mono"
-                              textAlign="center"
-                            >
-                              本地双人对战
-                            </Text>
+                            
                           </VStack>
                         )}
                       </VStack>

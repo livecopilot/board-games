@@ -274,7 +274,7 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                                 color={gameState.currentPlayer === 'black' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
                                 fontFamily="mono"
                               >
-                                黑方（对方）
+                                黑方（我方）
                               </Text>
                             </HStack>
                             

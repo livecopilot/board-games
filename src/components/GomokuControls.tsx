@@ -134,14 +134,7 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
                       : '黑棋（我方）'}
                   </Text>
                 </HStack>
-                <Text
-                  fontSize="xs"
-                  color="rgba(255, 255, 255, 0.6)"
-                  fontFamily="mono"
-                  textAlign="center"
-                >
-                  {isAIMode ? '人机对战模式' : '本地双人对战'}
-                </Text>
+                
               </VStack>
             )}
 
