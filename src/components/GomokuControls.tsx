@@ -170,112 +170,97 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
         </VStack>
 
         {/* 右侧：控制按钮 */}
-        <Box flex={1} mt={2} minH="90px">
-          <HStack space={2} flexWrap="wrap" alignItems="flex-start">
-          {/* 重新开始按钮 */}
-          <Pressable
-            onPress={() => setShowResetDialog(true)}
-            bg="rgba(139, 69, 19, 0.2)"
-            borderWidth={2}
-            borderColor="rgba(139, 69, 19, 0.6)"
-            borderRadius="lg"
-            px={2}
-            py={2}
-            minW="30%"
-            maxW="48%"
-            flex={1}
-            mb={2}
-            alignItems="center"
-            _pressed={{ bg: "rgba(139, 69, 19, 0.3)" }}
-            shadow={2}
-          >
-            <HStack alignItems="center" space={1}>
-              <IconFont name="refresh" size={12} color="rgba(255, 255, 255, 0.9)" />
-              <Text
-                color="rgba(255, 255, 255, 0.9)"
-                fontWeight="bold"
-                fontSize="xs"
-                fontFamily="mono"
-              >
-                重新开始
-              </Text>
-            </HStack>
-          </Pressable>
-
-          {/* 撤销按钮 */}
-          <Pressable
-            onPress={onUndo}
-            isDisabled={!canUndo}
-            bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
-            borderWidth={2}
-            borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
-            borderRadius="lg"
-            px={2}
-            py={2}
-            minW="30%"
-            maxW="48%"
-            flex={1}
-            mb={2}
-            alignItems="center"
-            _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-            shadow={canUndo ? 2 : 0}
-            opacity={canUndo ? 1 : 0.5}
-          >
-            <HStack alignItems="center" space={1}>
-              <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
-              <Text
-                color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
-                fontWeight="bold"
-                fontSize="xs"
-                fontFamily="mono"
-              >
-                悔棋
-              </Text>
-            </HStack>
-          </Pressable>
-
-          {/* 游戏模式切换 */}
+        <VStack flex={1} mt={2} minH="90px" space={2}>
+          {/* AI模式切换开关 */}
           <Box
-            bg="rgba(128, 0, 255, 0.15)"
-            borderWidth={2}
+            bg="rgba(128, 0, 255, 0.1)"
+            borderWidth={1}
             borderColor="rgba(128, 0, 255, 0.4)"
             borderRadius="lg"
-            px={2}
-            py={2}
-            minW="30%"
-            maxW="100%"
-            flex={1}
-            mb={2}
+            p={2}
             alignItems="center"
-            shadow={2}
           >
-            <VStack alignItems="center" space={1}>
-              <HStack alignItems="center" space={2}>
-                <IconFont name={isAIMode ? "hardware-chip" : "people"} size={12} color="rgba(255, 255, 255, 0.9)" />
+            <HStack alignItems="center" space={2} w="100%">
+              <Text
+                fontSize="xs"
+                color="rgba(255, 255, 255, 0.9)"
+                fontFamily="mono"
+                flex={1}
+              >
+                {isAIMode ? 'AI对战' : '双人对战'}
+              </Text>
+              <Switch
+                size="sm"
+                isChecked={isAIMode}
+                onToggle={onToggleAI}
+                trackColor={{
+                  false: "rgba(255, 255, 255, 0.2)",
+                  true: "rgba(128, 0, 255, 0.6)"
+                }}
+                thumbColor={isAIMode ? "rgba(128, 0, 255, 0.9)" : "rgba(255, 255, 255, 0.8)"}
+              />
+            </HStack>
+          </Box>
+
+          {/* 操作按钮行 */}
+          <HStack space={2} w="100%">
+            {/* 重新开始按钮 */}
+            <Pressable
+              onPress={() => setShowResetDialog(true)}
+              bg="rgba(128, 0, 255, 0.2)"
+              borderWidth={1}
+              borderColor="rgba(128, 0, 255, 0.6)"
+              borderRadius="lg"
+              px={2}
+              py={2}
+              flex={1}
+              alignItems="center"
+              _pressed={{ bg: "rgba(128, 0, 255, 0.3)" }}
+              shadow={2}
+            >
+              <HStack alignItems="center" space={1}>
+                <IconFont name="refresh" size={12} color="rgba(255, 255, 255, 0.9)" />
                 <Text
                   color="rgba(255, 255, 255, 0.9)"
                   fontWeight="bold"
                   fontSize="xs"
                   fontFamily="mono"
                 >
-                  {isAIMode ? 'AI对战' : '双人对战'}
+                  重新开始
                 </Text>
               </HStack>
-              <Switch
-                isChecked={isAIMode}
-                onToggle={onToggleAI}
-                size="sm"
-                trackColor={{
-                  false: "rgba(128, 128, 128, 0.3)",
-                  true: "rgba(128, 0, 255, 0.6)"
-                }}
-                thumbColor={isAIMode ? "rgba(128, 0, 255, 0.9)" : "rgba(200, 200, 200, 0.9)"}
-                ios_backgroundColor="rgba(128, 128, 128, 0.3)"
-              />
-            </VStack>
-          </Box>
+            </Pressable>
+
+            {/* 撤销按钮 */}
+            <Pressable
+              onPress={onUndo}
+              isDisabled={!canUndo}
+              bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+              borderWidth={1}
+              borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
+              borderRadius="lg"
+              px={2}
+              py={2}
+              flex={1}
+              alignItems="center"
+              _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+              shadow={canUndo ? 2 : 0}
+              opacity={canUndo ? 1 : 0.5}
+            >
+              <HStack alignItems="center" space={1}>
+                <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                <Text
+                  color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
+                  fontWeight="bold"
+                  fontSize="xs"
+                  fontFamily="mono"
+                >
+                  悔棋
+                </Text>
+              </HStack>
+            </Pressable>
           </HStack>
-        </Box>
+        </VStack>
       </HStack>
 
       {/* 重新开始确认弹框 */}
