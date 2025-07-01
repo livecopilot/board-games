@@ -1,6 +1,9 @@
 # Board Games - Classic Strategy Games Collection
 
 <div align="center">
+  
+**English | [中文](./README.md)**
+
   <img src="./wiki/ipad/HomeScreen.png" alt="Home Screen on iPad" width="400"/>
 </div>
 

@@ -1,6 +1,9 @@
 # 棋类游戏 - 经典策略游戏合集
 
 <div align="center">
+  
+**[English](./README_EN.md) | 中文**
+
   <img src="./wiki/ipad/HomeScreen.png" alt="iPad主屏幕" width="400"/>
 </div>
 
