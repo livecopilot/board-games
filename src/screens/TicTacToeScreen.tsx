@@ -22,7 +22,6 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   const {
     gameState,
     isAIMode,
-    aiDifficulty,
     isAIThinking,
     playerMove,
     resetGame,
@@ -35,8 +34,12 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showTips, setShowTips] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // 设置默认困难难度
+  React.useEffect(() => {
+    setAIDifficultyLevel(AIDifficulty.HARD);
+  }, []);
 
   const handleBackPress = () => {
     setShowExitDialog(true);
@@ -47,23 +50,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
     navigation.goBack();
   };
 
-  const getDifficultyText = (difficulty: AIDifficulty): string => {
-    switch (difficulty) {
-      case AIDifficulty.EASY:
-        return '简单';
-      case AIDifficulty.MEDIUM:
-        return '中等';
-      case AIDifficulty.HARD:
-        return '困难';
-      default:
-        return '中等';
-    }
-  };
 
-  const handleSetDifficulty = (difficulty: AIDifficulty) => {
-    setShowSettings(false);
-    setAIDifficultyLevel(difficulty);
-  };
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -369,11 +356,6 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           onReset={resetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
-          showSettings={showSettings}
-          onShowSettings={() => setShowSettings(true)}
-          onHideSettings={() => setShowSettings(false)}
-          aiDifficulty={aiDifficulty}
-          onSetDifficulty={handleSetDifficulty}
         />
       </ScrollView>
 

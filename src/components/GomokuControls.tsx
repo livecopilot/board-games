@@ -4,8 +4,8 @@ import {
   VStack,
   HStack,
   Text,
-  Button,
   Pressable,
+  Switch,
 } from 'native-base';
 import Modal from 'react-native-modal';
 import IconFont from 'react-native-vector-icons/Ionicons';
@@ -20,12 +20,6 @@ interface GomokuControlsProps {
   onReset: () => void;
   onUndo: () => void;
   onToggleAI: () => void;
-  // 设置相关props
-  showSettings?: boolean;
-  onShowSettings?: () => void;
-  onHideSettings?: () => void;
-  aiDifficulty?: any;
-  onSetDifficulty?: (difficulty: any) => void;
 }
 
 const GomokuControls: React.FC<GomokuControlsProps> = ({
@@ -38,14 +32,8 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
   onReset,
   onUndo,
   onToggleAI,
-  showSettings,
-  onShowSettings,
-  onHideSettings,
-  aiDifficulty,
-  onSetDifficulty,
 }) => {
   const [showResetDialog, setShowResetDialog] = useState(false);
-  const [showToggleDialog, setShowToggleDialog] = useState(false);
 
   const getPlayerText = (player: 'black' | 'white') => {
     return player === 'black' ? '黑方' : '白方';
@@ -80,13 +68,13 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
         return '#ff8000'; // 橙色
       }
       if (isAIMode && winner === 'white') {
-        return 'rgba(255, 215, 0, 0.9)'; // 金色
+        return 'rgba(128, 0, 255, 0.9)'; // 紫色
       }
       return winner === 'black' ? '#ffffff' : '#ffffff';
     }
     
     if (isAIThinking) {
-      return 'rgba(255, 215, 0, 0.9)'; // 金色
+      return 'rgba(128, 0, 255, 0.9)'; // 紫色
     }
     
     return currentPlayer === 'black' ? '#ffffff' : '#ffffff';
@@ -97,29 +85,24 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
     onReset();
   };
 
-  const handleToggleAI = () => {
-    setShowToggleDialog(false);
-    onToggleAI();
-  };
-
   return (
     <Box>
-      <HStack alignItems="flex-start" px={5} space={4} w="100%">
+      <HStack alignItems="flex-start" px={4} space={3} w="100%">
         {/* 左侧：游戏状态显示 */}
-        <VStack flex={1} space={3} minH="120px" justifyContent="flex-start">
+        <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
           <Box
             bg="rgba(139, 69, 19, 0.1)"
             borderWidth={2}
             borderColor="rgba(139, 69, 19, 0.3)"
             borderRadius="lg"
-            p={4}
+            p={3}
             w="100%"
             alignItems="center"
             shadow={3}
-            mt={3}
+            mt={2}
           >
             <Text
-              fontSize="lg"
+              fontSize="md"
               fontWeight="bold"
               color={getStatusColor()}
               fontFamily="mono"
@@ -130,19 +113,19 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
 
             {/* 当前玩家指示器 */}
             {!isGameOver && !isAIThinking && (
-              <VStack alignItems="center" mt={2} space={1}>
+              <VStack alignItems="center" mt={1} space={1}>
                 <HStack alignItems="center" space={2}>
                   <Box
-                    w="16px"
-                    h="16px"
+                    w="14px"
+                    h="14px"
                     borderRadius="full"
                     bg={currentPlayer === 'black' ? '#2d2d2d' : '#ffffff'}
                     borderWidth={2}
                     borderColor={currentPlayer === 'black' ? '#404040' : '#e0e0e0'}
-                    shadow={3}
+                    shadow={2}
                   />
                   <Text
-                    fontSize="sm"
+                    fontSize="xs"
                     color="white"
                     fontFamily="mono"
                   >
@@ -153,7 +136,7 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
                 </HStack>
                 <Text
                   fontSize="xs"
-                  color="rgba(255, 255, 255, 0.7)"
+                  color="rgba(255, 255, 255, 0.6)"
                   fontFamily="mono"
                   textAlign="center"
                 >
@@ -164,19 +147,19 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
 
             {/* AI思考指示器 */}
             {isAIThinking && (
-              <HStack alignItems="center" mt={2} space={2}>
+              <HStack alignItems="center" mt={1} space={2}>
                 <Box
-                  w="16px"
-                  h="16px"
+                  w="14px"
+                  h="14px"
                   borderRadius="full"
-                  bg="rgba(255, 215, 0, 0.9)"
+                  bg="rgba(128, 0, 255, 0.9)"
                   borderWidth={2}
-                  borderColor="rgba(255, 215, 0, 0.7)"
-                  shadow={3}
+                  borderColor="rgba(128, 0, 255, 0.7)"
+                  shadow={2}
                 />
                 <Text
-                  fontSize="sm"
-                  color="rgba(255, 215, 0, 0.9)"
+                  fontSize="xs"
+                  color="rgba(128, 0, 255, 0.9)"
                   fontFamily="mono"
                 >
                   🤖 AI正在思考...
@@ -187,7 +170,7 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
         </VStack>
 
         {/* 右侧：控制按钮 */}
-        <Box flex={1} mt={3} minH="120px">
+        <Box flex={1} mt={2} minH="90px">
           <HStack space={2} flexWrap="wrap" alignItems="flex-start">
           {/* 重新开始按钮 */}
           <Pressable
@@ -196,22 +179,22 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
             borderWidth={2}
             borderColor="rgba(139, 69, 19, 0.6)"
             borderRadius="lg"
-            px={3}
-            py={3}
+            px={2}
+            py={2}
             minW="30%"
             maxW="48%"
             flex={1}
             mb={2}
             alignItems="center"
             _pressed={{ bg: "rgba(139, 69, 19, 0.3)" }}
-            shadow={3}
+            shadow={2}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="refresh" size={14} color="rgba(255, 255, 255, 0.9)" />
+              <IconFont name="refresh" size={12} color="rgba(255, 255, 255, 0.9)" />
               <Text
                 color="rgba(255, 255, 255, 0.9)"
                 fontWeight="bold"
-                fontSize="sm"
+                fontSize="xs"
                 fontFamily="mono"
               >
                 重新开始
@@ -227,23 +210,23 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
             borderWidth={2}
             borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
             borderRadius="lg"
-            px={3}
-            py={3}
+            px={2}
+            py={2}
             minW="30%"
             maxW="48%"
             flex={1}
             mb={2}
             alignItems="center"
             _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-            shadow={canUndo ? 3 : 0}
+            shadow={canUndo ? 2 : 0}
             opacity={canUndo ? 1 : 0.5}
           >
             <HStack alignItems="center" space={1}>
-              <IconFont name="arrow-undo" size={14} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+              <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
               <Text
                 color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                 fontWeight="bold"
-                fontSize="sm"
+                fontSize="xs"
                 fontFamily="mono"
               >
                 悔棋
@@ -251,66 +234,46 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
             </HStack>
           </Pressable>
 
-          {/* 游戏模式切换按钮 */}
-          <Pressable
-            onPress={() => setShowToggleDialog(true)}
-            bg="rgba(139, 69, 19, 0.2)"
+          {/* 游戏模式切换 */}
+          <Box
+            bg="rgba(128, 0, 255, 0.15)"
             borderWidth={2}
-            borderColor="rgba(139, 69, 19, 0.6)"
+            borderColor="rgba(128, 0, 255, 0.4)"
             borderRadius="lg"
-            px={3}
-            py={3}
+            px={2}
+            py={2}
             minW="30%"
-            maxW="48%"
+            maxW="100%"
             flex={1}
             mb={2}
             alignItems="center"
-            _pressed={{ bg: "rgba(139, 69, 19, 0.3)" }}
-            shadow={3}
+            shadow={2}
           >
-            <HStack alignItems="center" space={1}>
-              <IconFont name={isAIMode ? "hardware-chip" : "people"} size={14} color="rgba(255, 255, 255, 0.9)" />
-              <Text
-                color="rgba(255, 255, 255, 0.9)"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-                textAlign="center"
-              >
-                {isAIMode ? 'AI对战' : '双人对战'}
-              </Text>
-            </HStack>
-          </Pressable>
-
-          {/* 设置按钮 */}
-          <Pressable
-            onPress={onShowSettings}
-            bg="rgba(128, 128, 255, 0.2)"
-            borderWidth={2}
-            borderColor="rgba(128, 128, 255, 0.6)"
-            borderRadius="lg"
-            px={3}
-            py={3}
-            minW="30%"
-            maxW="48%"
-            flex={1}
-            mb={2}
-            alignItems="center"
-            _pressed={{ bg: "rgba(128, 128, 255, 0.3)" }}
-            shadow={3}
-          >
-            <HStack alignItems="center" space={1}>
-              <IconFont name="settings" size={14} color="rgba(255, 255, 255, 0.9)" />
-              <Text
-                color="rgba(255, 255, 255, 0.9)"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                设置
-              </Text>
-            </HStack>
-          </Pressable>
+            <VStack alignItems="center" space={1}>
+              <HStack alignItems="center" space={2}>
+                <IconFont name={isAIMode ? "hardware-chip" : "people"} size={12} color="rgba(255, 255, 255, 0.9)" />
+                <Text
+                  color="rgba(255, 255, 255, 0.9)"
+                  fontWeight="bold"
+                  fontSize="xs"
+                  fontFamily="mono"
+                >
+                  {isAIMode ? 'AI对战' : '双人对战'}
+                </Text>
+              </HStack>
+              <Switch
+                isChecked={isAIMode}
+                onToggle={onToggleAI}
+                size="sm"
+                trackColor={{
+                  false: "rgba(128, 128, 128, 0.3)",
+                  true: "rgba(128, 0, 255, 0.6)"
+                }}
+                thumbColor={isAIMode ? "rgba(128, 0, 255, 0.9)" : "rgba(200, 200, 200, 0.9)"}
+                ios_backgroundColor="rgba(128, 128, 128, 0.3)"
+              />
+            </VStack>
+          </Box>
           </HStack>
         </Box>
       </HStack>
@@ -415,209 +378,6 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
               </Pressable>
             </HStack>
           </Box>
-        </Box>
-      </Modal>
-
-      {/* AI模式切换确认弹框 */}
-      <Modal
-        isVisible={showToggleDialog}
-        onBackdropPress={() => setShowToggleDialog(false)}
-        onBackButtonPress={() => setShowToggleDialog(false)}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(139, 69, 19, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="85%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(139, 69, 19, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(139, 69, 19, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="rgba(139, 69, 19, 0.9)" fontFamily="mono">
-              {isAIMode ? '关闭AI模式' : '开启AI模式'}
-            </Text>
-            <Pressable
-              onPress={() => setShowToggleDialog(false)}
-              _pressed={{ bg: "rgba(139, 69, 19, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="rgba(139, 69, 19, 0.9)"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <Box p={4}>
-            <Text color="white" fontSize="md" textAlign="center">
-              {isAIMode 
-                ? '切换到双人对战模式？游戏将重新开始。' 
-                : '切换到人机对战模式？游戏将重新开始。'}
-            </Text>
-          </Box>
-
-          {/* 底部按钮 */}
-          <Box
-            bg="rgba(139, 69, 19, 0.05)"
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor="rgba(139, 69, 19, 0.2)"
-            p={4}
-          >
-            <HStack space={2}>
-              <Pressable
-                flex={1}
-                onPress={() => setShowToggleDialog(false)}
-                bg="rgba(128, 128, 128, 0.2)"
-                borderWidth={2}
-                borderColor="rgba(128, 128, 128, 0.5)"
-                borderRadius="lg"
-                py={3}
-                alignItems="center"
-                _pressed={{ bg: "rgba(128, 128, 128, 0.3)" }}
-                shadow={2}
-              >
-                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
-                  取消
-                </Text>
-              </Pressable>
-              <Pressable
-                flex={1}
-                onPress={handleToggleAI}
-                bg="rgba(139, 69, 19, 0.3)"
-                borderWidth={2}
-                borderColor="rgba(139, 69, 19, 0.7)"
-                borderRadius="lg"
-                py={3}
-                alignItems="center"
-                _pressed={{ bg: "rgba(139, 69, 19, 0.4)" }}
-                shadow={3}
-              >
-                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
-                  确认切换
-                </Text>
-              </Pressable>
-            </HStack>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* AI难度设置弹框 */}
-      <Modal
-        isVisible={showSettings}
-        onBackdropPress={onHideSettings}
-        onBackButtonPress={onHideSettings}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(139, 69, 19, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="85%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(139, 69, 19, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(139, 69, 19, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="rgba(139, 69, 19, 0.9)" fontFamily="mono">
-              AI难度设置
-            </Text>
-            <Pressable
-              onPress={onHideSettings}
-              _pressed={{ bg: "rgba(139, 69, 19, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="rgba(139, 69, 19, 0.9)"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <VStack space={3} p={4}>
-            {['easy', 'medium', 'hard'].map((difficulty) => (
-              <Pressable
-                key={difficulty}
-                onPress={() => onSetDifficulty && onSetDifficulty(difficulty)}
-                bg={aiDifficulty === difficulty ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.05)"}
-                borderWidth={1}
-                borderColor={aiDifficulty === difficulty ? "rgba(139, 69, 19, 0.6)" : "rgba(139, 69, 19, 0.3)"}
-                borderRadius="lg"
-                p={4}
-                _pressed={{ bg: "rgba(139, 69, 19, 0.15)" }}
-              >
-                <HStack alignItems="center" justifyContent="space-between">
-                  <VStack>
-                    <Text
-                      color="white"
-                      fontSize="md"
-                      fontWeight="bold"
-                      fontFamily="mono"
-                    >
-                      {difficulty === 'easy' ? '简单' : difficulty === 'medium' ? '中等' : '困难'}
-                    </Text>
-                    <Text
-                      color="gray.400"
-                      fontSize="sm"
-                      fontFamily="mono"
-                    >
-                      {difficulty === 'easy' ? '适合新手，随机落子' : 
-                       difficulty === 'medium' ? '一般水平，基础策略' : 
-                       '高手水平，深度思考'}
-                    </Text>
-                  </VStack>
-                  {aiDifficulty === difficulty && (
-                    <Box
-                      w={4}
-                      h={4}
-                      borderRadius="full"
-                      bg="rgba(139, 69, 19, 0.9)"
-                    />
-                  )}
-                </HStack>
-              </Pressable>
-            ))}
-          </VStack>
         </Box>
       </Modal>
     </Box>

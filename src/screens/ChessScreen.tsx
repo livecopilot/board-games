@@ -22,7 +22,6 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
   const {
     gameState,
     isAIMode,
-    aiDifficulty,
     isAIThinking,
     selectedPiece,
     selectPiece,
@@ -38,8 +37,12 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showTips, setShowTips] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // 设置默认困难难度
+  React.useEffect(() => {
+    setAIDifficultyLevel(AIDifficulty.HARD);
+  }, []);
 
   const handleBackPress = () => {
     setShowExitDialog(true);
@@ -62,23 +65,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
     }
   };
 
-  const getDifficultyText = (difficulty: any): string => {
-    switch (difficulty) {
-      case 'easy':
-        return '简单';
-      case 'medium':
-        return '中等';
-      case 'hard':
-        return '困难';
-      default:
-        return '中等';
-    }
-  };
 
-  const handleSetDifficulty = (difficulty: any) => {
-    setShowSettings(false);
-    setAIDifficultyLevel(difficulty);
-  };
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -415,11 +402,6 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           onReset={resetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
-          showSettings={showSettings}
-          onShowSettings={() => setShowSettings(true)}
-          onHideSettings={() => setShowSettings(false)}
-          aiDifficulty={aiDifficulty}
-          onSetDifficulty={handleSetDifficulty}
         />
       </ScrollView>
 

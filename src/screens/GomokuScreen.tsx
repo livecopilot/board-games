@@ -21,7 +21,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
   const {
     gameState,
     isAIMode,
-    aiDifficulty,
     isAIThinking,
     placePiece,
     resetGame,
@@ -34,8 +33,12 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showTips, setShowTips] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+
+  // 设置默认困难难度
+  React.useEffect(() => {
+    setAIDifficultyLevel(AIDifficulty.HARD);
+  }, []);
 
   const handleBackPress = () => {
     setShowExitDialog(true);
@@ -50,23 +53,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
     placePiece(position);
   };
 
-  const getDifficultyText = (difficulty: any): string => {
-    switch (difficulty) {
-      case 'easy':
-        return '简单';
-      case 'medium':
-        return '中等';
-      case 'hard':
-        return '困难';
-      default:
-        return '中等';
-    }
-  };
 
-  const handleSetDifficulty = (difficulty: any) => {
-    setShowSettings(false);
-    setAIDifficultyLevel(difficulty);
-  };
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -376,11 +363,6 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
           onReset={resetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
-          showSettings={showSettings}
-          onShowSettings={() => setShowSettings(true)}
-          onHideSettings={() => setShowSettings(false)}
-          aiDifficulty={aiDifficulty}
-          onSetDifficulty={handleSetDifficulty}
         />
       </ScrollView>
 
