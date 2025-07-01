@@ -4,8 +4,8 @@ import {
   Text,
   Pressable,
 } from 'native-base';
-import { Dimensions } from 'react-native';
 import { Board, Position, CellValue } from '../types';
+import { getAdaptiveSize, getDeviceInfo } from '../utils/deviceUtils';
 
 interface TicTacToeBoardProps {
   board: Board;
@@ -13,15 +13,16 @@ interface TicTacToeBoardProps {
   disabled?: boolean;
 }
 
-const { width } = Dimensions.get('window');
-const BOARD_SIZE = width * 0.8;
-const CELL_SIZE = (BOARD_SIZE - 40) / 3; // 减去外边框和内边距
-
 const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   board,
   onCellPress,
   disabled = false,
 }) => {
+  const deviceInfo = getDeviceInfo();
+  const adaptiveSize = getAdaptiveSize();
+  
+  const BOARD_SIZE = adaptiveSize.boardSize;
+  const CELL_SIZE = (BOARD_SIZE - (deviceInfo.isTablet ? 40 : 32)) / 3;
   const getCellColor = (value: CellValue) => {
     if (value === 'X') return 'rgba(0, 255, 136, 0.8)';
     if (value === 'O') return 'rgba(255, 0, 128, 0.8)';
@@ -61,11 +62,11 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           } : {}}
         >
           <Text
-            fontSize={`${(CELL_SIZE - 8) * 0.5}px`}
+            fontSize={`${(CELL_SIZE - 8) * (deviceInfo.isTablet ? 0.4 : 0.5)}px`}
             fontWeight="bold"
             color={value === 'X' ? 'black' : value === 'O' ? 'white' : 'transparent'}
             fontFamily="mono"
-            letterSpacing={2}
+            letterSpacing={deviceInfo.isTablet ? 3 : 2}
           >
             {value || ''}
           </Text>
@@ -78,7 +79,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
             right={-1}
             top="10%"
             bottom="10%"
-            w="2px"
+            w={deviceInfo.isTablet ? "3px" : "2px"}
             bg="rgba(0, 255, 136, 0.6)"
             borderRadius="full"
           />
@@ -91,7 +92,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
             bottom={-1}
             left="10%"
             right="10%"
-            h="2px"
+            h={deviceInfo.isTablet ? "3px" : "2px"}
             bg="rgba(0, 255, 136, 0.6)"
             borderRadius="full"
           />
@@ -107,10 +108,10 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
         w={`${BOARD_SIZE}px`}
         h={`${BOARD_SIZE}px`}
         bg="rgba(0, 0, 0, 0.4)"
-        borderWidth={3}
+        borderWidth={deviceInfo.isTablet ? 4 : 3}
         borderColor="rgba(0, 255, 136, 0.8)"
         borderRadius="xl"
-        p={5}
+        p={deviceInfo.isTablet ? 6 : 5}
         shadow={8}
         position="relative"
       >
@@ -178,40 +179,40 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           position="absolute"
           top={2}
           left={2}
-          w="15px"
-          h="15px"
-          borderTopWidth={2}
-          borderLeftWidth={2}
+          w={deviceInfo.isTablet ? "20px" : "15px"}
+          h={deviceInfo.isTablet ? "20px" : "15px"}
+          borderTopWidth={deviceInfo.isTablet ? 3 : 2}
+          borderLeftWidth={deviceInfo.isTablet ? 3 : 2}
           borderColor="rgba(0, 255, 136, 0.6)"
         />
         <Box
           position="absolute"
           top={2}
           right={2}
-          w="15px"
-          h="15px"
-          borderTopWidth={2}
-          borderRightWidth={2}
+          w={deviceInfo.isTablet ? "20px" : "15px"}
+          h={deviceInfo.isTablet ? "20px" : "15px"}
+          borderTopWidth={deviceInfo.isTablet ? 3 : 2}
+          borderRightWidth={deviceInfo.isTablet ? 3 : 2}
           borderColor="rgba(0, 255, 136, 0.6)"
         />
         <Box
           position="absolute"
           bottom={2}
           left={2}
-          w="15px"
-          h="15px"
-          borderBottomWidth={2}
-          borderLeftWidth={2}
+          w={deviceInfo.isTablet ? "20px" : "15px"}
+          h={deviceInfo.isTablet ? "20px" : "15px"}
+          borderBottomWidth={deviceInfo.isTablet ? 3 : 2}
+          borderLeftWidth={deviceInfo.isTablet ? 3 : 2}
           borderColor="rgba(0, 255, 136, 0.6)"
         />
         <Box
           position="absolute"
           bottom={2}
           right={2}
-          w="15px"
-          h="15px"
-          borderBottomWidth={2}
-          borderRightWidth={2}
+          w={deviceInfo.isTablet ? "20px" : "15px"}
+          h={deviceInfo.isTablet ? "20px" : "15px"}
+          borderBottomWidth={deviceInfo.isTablet ? 3 : 2}
+          borderRightWidth={deviceInfo.isTablet ? 3 : 2}
           borderColor="rgba(0, 255, 136, 0.6)"
         />
       </Box>
