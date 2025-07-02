@@ -325,7 +325,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
     const animations: Animated.CompositeAnimation[] = [];
 
-    if (selectedPiece || isInCheck) {
+    // 检查是否有将军状态或选中棋子
+    const hasCheckState = redInCheck || blackInCheck;
+    if (selectedPiece || hasCheckState) {
       const blinkAnim = createBlinkAnimation(blinkAnimation);
       const pulseAnim = createPulseAnimation(pulseAnimation);
       animations.push(blinkAnim, pulseAnim);
@@ -344,7 +346,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return () => {
       animations.forEach(anim => anim.stop());
     };
-  }, [selectedPiece, lastMove, isInCheck, blinkAnimation, pulseAnimation, moveToBlinkAnimation, moveToPulseAnimation]);
+  }, [selectedPiece, lastMove, redInCheck, blackInCheck, blinkAnimation, pulseAnimation, moveToBlinkAnimation, moveToPulseAnimation]);
 
   const isSelected = (row: number, col: number) => {
     return selectedPiece?.row === row && selectedPiece?.col === col;
@@ -371,7 +373,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     const kingInCheck = (piece.player === 'red' && redInCheck) || (piece.player === 'black' && blackInCheck);
     
     if (kingInCheck) {
-      console.log(`[ChessBoard] 检测到被将军的王棋: 位置(${row},${col}), 玩家: ${piece.player}, 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
+      console.log(`[ChessBoard] 🚨 ${piece.player}方王棋被将军！位置: (${row},${col})`);
     }
     
     return kingInCheck;
