@@ -62,7 +62,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           } : {}}
         >
           <Text
-            fontSize={`${(CELL_SIZE - 8) * (deviceInfo.isTablet ? 0.4 : 0.5)}px`}
+            fontSize={`${(CELL_SIZE - 8) * (deviceInfo.isTablet ? 0.35 : 0.45)}px`}
             fontWeight="bold"
             color={value === 'X' ? 'black' : value === 'O' ? 'white' : 'transparent'}
             fontFamily="mono"
