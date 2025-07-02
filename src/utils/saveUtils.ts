@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 // 存档类型
 export type GameType = "checkers" | "chess" | "gomoku" | "tictactoe";
@@ -25,15 +26,7 @@ const generateId = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9
 
 // 格式化时间显示
 const formatDisplayName = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+  return moment(timestamp).format("YYYY-MM-DD HH:mm:ss");
 };
 
 // 保存游戏存档

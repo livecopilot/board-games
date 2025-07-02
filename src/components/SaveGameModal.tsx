@@ -12,7 +12,12 @@ import {
 import { Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import IconFont from 'react-native-vector-icons/Ionicons';
+import moment from 'moment';
+import 'moment/locale/zh-cn'; // 引入中文本地化
 import { SavedGame, GameType } from '../utils/saveUtils';
+
+// 设置 moment 为中文
+moment.locale('zh-cn');
 
 interface SaveGameModalProps {
   isVisible: boolean;
@@ -106,24 +111,7 @@ const SaveGameModal: React.FC<SaveGameModalProps> = ({
 
   // 格式化时间显示
   const formatTimeDisplay = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    
-    return date.toLocaleDateString('zh-CN', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return moment(timestamp).fromNow();
   };
 
   return (
