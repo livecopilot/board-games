@@ -7,7 +7,6 @@ import {
   Pressable,
   Switch,
 } from 'native-base';
-import Modal from 'react-native-modal';
 import IconFont from 'react-native-vector-icons/Ionicons';
 
 interface GomokuControlsProps {
@@ -33,8 +32,6 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
   onUndo,
   onToggleAI,
 }) => {
-  const [showResetDialog, setShowResetDialog] = useState(false);
-
   const getPlayerText = (player: 'black' | 'white') => {
     return player === 'black' ? '黑方' : '白方';
   };
@@ -78,11 +75,6 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
     }
     
     return currentPlayer === 'black' ? '#ffffff' : '#ffffff';
-  };
-
-  const handleReset = () => {
-    setShowResetDialog(false);
-    onReset();
   };
 
   return (
@@ -195,7 +187,7 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
           <HStack space={2} w="100%">
             {/* 重新开始按钮 */}
             <Pressable
-              onPress={() => setShowResetDialog(true)}
+              onPress={onReset}
               bg="rgba(128, 0, 255, 0.2)"
               borderWidth={1}
               borderColor="rgba(128, 0, 255, 0.6)"
@@ -251,109 +243,6 @@ const GomokuControls: React.FC<GomokuControlsProps> = ({
           </HStack>
         </VStack>
       </HStack>
-
-      {/* 重新开始确认弹框 */}
-      <Modal
-        isVisible={showResetDialog}
-        onBackdropPress={() => setShowResetDialog(false)}
-        onBackButtonPress={() => setShowResetDialog(false)}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-      >
-        <Box
-          bg="#000015"
-          borderColor="rgba(139, 69, 19, 0.3)"
-          borderWidth={1}
-          borderRadius="lg"
-          w="85%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg="rgba(139, 69, 19, 0.1)"
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor="rgba(139, 69, 19, 0.3)"
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color="rgba(139, 69, 19, 0.9)" fontFamily="mono">
-              重新开始
-            </Text>
-            <Pressable
-              onPress={() => setShowResetDialog(false)}
-              _pressed={{ bg: "rgba(139, 69, 19, 0.1)" }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color="rgba(139, 69, 19, 0.9)"
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          <Box p={4}>
-            <Text color="white" fontSize="md" textAlign="center">
-              确定要重新开始游戏吗？当前进度将会丢失。
-            </Text>
-          </Box>
-
-          {/* 底部按钮 */}
-          <Box
-            bg="rgba(139, 69, 19, 0.05)"
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor="rgba(139, 69, 19, 0.2)"
-            p={4}
-          >
-            <HStack space={2}>
-              <Pressable
-                flex={1}
-                onPress={() => setShowResetDialog(false)}
-                bg="rgba(128, 128, 128, 0.2)"
-                borderWidth={2}
-                borderColor="rgba(128, 128, 128, 0.5)"
-                borderRadius="lg"
-                py={3}
-                alignItems="center"
-                _pressed={{ bg: "rgba(128, 128, 128, 0.3)" }}
-                shadow={2}
-              >
-                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
-                  取消
-                </Text>
-              </Pressable>
-              <Pressable
-                flex={1}
-                onPress={handleReset}
-                bg="rgba(139, 69, 19, 0.3)"
-                borderWidth={2}
-                borderColor="rgba(139, 69, 19, 0.7)"
-                borderRadius="lg"
-                py={3}
-                alignItems="center"
-                _pressed={{ bg: "rgba(139, 69, 19, 0.4)" }}
-                shadow={3}
-              >
-                <Text color="rgba(255, 255, 255, 0.9)" fontWeight="bold" fontFamily="mono">
-                  确认重新开始
-                </Text>
-              </Pressable>
-            </HStack>
-          </Box>
-        </Box>
-      </Modal>
     </Box>
   );
 };
