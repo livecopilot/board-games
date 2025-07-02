@@ -34,26 +34,6 @@ const SaveGameModal: React.FC<SaveGameModalProps> = ({
   themeColor,
 }) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [toastConfig, setToastConfig] = useState<{
-    visible: boolean;
-    title: string;
-    message: string;
-    type: 'success' | 'error';
-  }>({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'success',
-  });
-
-  // 显示Toast消息
-  const showToast = (title: string, message: string, type: 'success' | 'error' = 'success') => {
-    setToastConfig({ visible: true, title, message, type });
-    // 2秒后自动隐藏
-    setTimeout(() => {
-      setToastConfig(prev => ({ ...prev, visible: false }));
-    }, 2000);
-  };
 
   // 从主题色提取纯色值（去掉透明度）
   const getMainColor = () => {
@@ -117,11 +97,8 @@ const SaveGameModal: React.FC<SaveGameModalProps> = ({
     try {
       await onLoadGame(saveId);
       onClose();
-      // 使用自定义Toast替代原生Alert
-      showToast('成功', '存档加载成功！', 'success');
     } catch (error) {
-      // 使用自定义Toast替代原生Alert
-      showToast('错误', '加载存档失败', 'error');
+      console.error('加载存档失败:', error);
     } finally {
       setLoadingId(null);
     }
@@ -150,227 +127,173 @@ const SaveGameModal: React.FC<SaveGameModalProps> = ({
   };
 
   return (
-    <>
-      {/* 主要的存档Modal */}
-      <Modal
-        isVisible={isVisible}
-        onBackdropPress={onClose}
-        {...(Platform.OS === 'android' && { onBackButtonPress: onClose })}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        backdropOpacity={0.7}
-        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+    <Modal
+      isVisible={isVisible}
+      onBackdropPress={onClose}
+      {...(Platform.OS === 'android' && { onBackButtonPress: onClose })}
+      animationIn="slideInUp"
+      animationOut="slideOutDown"
+      backdropOpacity={0.7}
+      style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+    >
+      <Box
+        bg="#000015"
+        borderColor={borderColor}
+        borderWidth={1}
+        borderRadius="lg"
+        w="90%"
+        maxH="80%"
+        shadow={5}
       >
-        <Box
-          bg="#000015"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="lg"
-          w="90%"
-          maxH="80%"
-          shadow={5}
-        >
-          {/* 头部 */}
-          <HStack
-            justifyContent="space-between"
-            alignItems="center"
-            bg={backgroundColor}
-            borderTopRadius="lg"
-            borderBottomWidth={1}
-            borderBottomColor={borderColor}
-            px={4}
-            py={3}
-          >
-            <Text fontSize="lg" fontWeight="bold" color={mainColor} fontFamily="mono">
-              游戏存档
-            </Text>
-            <Pressable
-              onPress={onClose}
-              _pressed={{ bg: backgroundColor }}
-              borderRadius="md"
-              px={2}
-              py={1}
-            >
-              <Text
-                color={mainColor}
-                fontWeight="bold"
-                fontSize="sm"
-                fontFamily="mono"
-              >
-                关闭
-              </Text>
-            </Pressable>
-          </HStack>
-
-          {/* 内容 */}
-          {savedGames.length === 0 ? (
-            // 空状态 - 模仿规则弹框的内容结构
-            <Box p={4} minH="200px" justifyContent="center" alignItems="center">
-              <VStack space={3} alignItems="center">
-                <IconFont name="folder-open-outline" size={48} color="rgba(255, 255, 255, 0.3)" />
-                <Text
-                  fontSize="md"
-                  color="rgba(255, 255, 255, 0.5)"
-                  textAlign="center"
-                  fontFamily="mono"
-                >
-                  暂无存档
-                </Text>
-                <Text
-                  fontSize="sm"
-                  color="rgba(255, 255, 255, 0.3)"
-                  textAlign="center"
-                  fontFamily="mono"
-                >
-                  开始游戏后可以保存进度
-                </Text>
-              </VStack>
-            </Box>
-          ) : (
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <VStack space={3} p={4}>
-                {savedGames.map((save, index) => (
-                  <HStack key={save.id} alignItems="center" space={3}>
-                    <Box w={2} h={2} borderRadius="full" bg={mainColor} />
-                    <Pressable
-                      flex={1}
-                      onPress={() => handleLoadGame(save.id)}
-                      isDisabled={loadingId === save.id || isLoading}
-                      opacity={loadingId === save.id ? 0.6 : 1}
-                    >
-                      <HStack alignItems="center" space={2} flex={1}>
-                        <VStack flex={1}>
-                          <HStack alignItems="center" space={2}>
-                            <Text
-                              fontSize="sm"
-                              color="white"
-                              fontFamily="mono"
-                              flex={1}
-                            >
-                              {save.displayName}
-                            </Text>
-                            {save.isAIMode && (
-                              <Box
-                                bg="rgba(255, 165, 0, 0.2)"
-                                borderWidth={1}
-                                borderColor="rgba(255, 165, 0, 0.5)"
-                                borderRadius="sm"
-                                px={1}
-                                py={0.5}
-                              >
-                                <Text
-                                  fontSize="xs"
-                                  color="#ffa500"
-                                  fontFamily="mono"
-                                >
-                                  AI
-                                </Text>
-                              </Box>
-                            )}
-                          </HStack>
-                          
-                          <Text
-                            fontSize="xs"
-                            color="rgba(255, 255, 255, 0.6)"
-                            fontFamily="mono"
-                          >
-                            {formatTimeDisplay(save.timestamp)}
-                          </Text>
-                        </VStack>
-
-                        {/* 状态指示 */}
-                        {loadingId === save.id ? (
-                          <Spinner size="sm" color={mainColor} />
-                        ) : (
-                          <IconFont name="chevron-forward" size={16} color={mainColor} />
-                        )}
-                      </HStack>
-                    </Pressable>
-                  </HStack>
-                ))}
-              </VStack>
-            </ScrollView>
-          )}
-
-          {/* 底部按钮 */}
-          <Box
-            bg={bottomBackgroundColor}
-            borderBottomRadius="lg"
-            borderTopWidth={1}
-            borderTopColor={bottomBorderColor}
-            p={4}
-          >
-            <Button
-              onPress={onClose}
-              bg={mainColor}
-              _text={{ 
-                color: mainColor === '#00ff88' ? "black" : "white", 
-                fontWeight: "bold" 
-              }}
-              _pressed={{ 
-                bg: mainColor === '#ff0080' ? "#cc0066" : 
-                    mainColor === '#00ff88' ? "#00cc6a" :
-                    mainColor.replace('0.9', '0.6')
-              }}
-              w="100%"
-            >
-              {savedGames.length === 0 ? "知道了" : "关闭"}
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-
-      {/* 自定义Toast Modal */}
-      <Modal
-        isVisible={toastConfig.visible}
-        backdropOpacity={0.3}
-        animationIn="slideInDown"
-        animationOut="slideOutUp"
-        style={{ 
-          margin: 0, 
-          justifyContent: 'flex-start', 
-          alignItems: 'center',
-          paddingTop: 60 
-        }}
-      >
-        <Box
-          bg={toastConfig.type === 'success' ? 'rgba(0, 255, 136, 0.95)' : 'rgba(255, 48, 48, 0.95)'}
-          borderRadius="lg"
+        {/* 头部 */}
+        <HStack
+          justifyContent="space-between"
+          alignItems="center"
+          bg={backgroundColor}
+          borderTopRadius="lg"
+          borderBottomWidth={1}
+          borderBottomColor={borderColor}
           px={4}
           py={3}
-          mx={4}
-          shadow={5}
-          borderWidth={1}
-          borderColor={toastConfig.type === 'success' ? 'rgba(0, 255, 136, 0.8)' : 'rgba(255, 48, 48, 0.8)'}
         >
-          <VStack space={1} alignItems="center">
-            <HStack alignItems="center" space={2}>
-              <IconFont 
-                name={toastConfig.type === 'success' ? 'checkmark-circle' : 'close-circle'} 
-                size={20} 
-                color={toastConfig.type === 'success' ? '#000' : '#fff'} 
-              />
+          <Text fontSize="lg" fontWeight="bold" color={mainColor} fontFamily="mono">
+            游戏存档
+          </Text>
+          <Pressable
+            onPress={onClose}
+            _pressed={{ bg: backgroundColor }}
+            borderRadius="md"
+            px={2}
+            py={1}
+          >
+            <Text
+              color={mainColor}
+              fontWeight="bold"
+              fontSize="sm"
+              fontFamily="mono"
+            >
+              关闭
+            </Text>
+          </Pressable>
+        </HStack>
+
+        {/* 内容 */}
+        {savedGames.length === 0 ? (
+          // 空状态 - 模仿规则弹框的内容结构
+          <Box p={4} minH="200px" justifyContent="center" alignItems="center">
+            <VStack space={3} alignItems="center">
+              <IconFont name="folder-open-outline" size={48} color="rgba(255, 255, 255, 0.3)" />
               <Text
                 fontSize="md"
-                fontWeight="bold"
-                color={toastConfig.type === 'success' ? '#000' : '#fff'}
+                color="rgba(255, 255, 255, 0.5)"
+                textAlign="center"
                 fontFamily="mono"
               >
-                {toastConfig.title}
+                暂无存档
               </Text>
-            </HStack>
-            <Text
-              fontSize="sm"
-              color={toastConfig.type === 'success' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)'}
-              fontFamily="mono"
-              textAlign="center"
-            >
-              {toastConfig.message}
-            </Text>
-          </VStack>
+              <Text
+                fontSize="sm"
+                color="rgba(255, 255, 255, 0.3)"
+                textAlign="center"
+                fontFamily="mono"
+              >
+                开始游戏后可以保存进度
+              </Text>
+            </VStack>
+          </Box>
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <VStack space={3} p={4}>
+              {savedGames.map((save, index) => (
+                <HStack key={save.id} alignItems="center" space={3}>
+                  <Box w={2} h={2} borderRadius="full" bg={mainColor} />
+                  <Pressable
+                    flex={1}
+                    onPress={() => handleLoadGame(save.id)}
+                    isDisabled={loadingId === save.id || isLoading}
+                    opacity={loadingId === save.id ? 0.6 : 1}
+                  >
+                    <HStack alignItems="center" space={2} flex={1}>
+                      <VStack flex={1}>
+                        <HStack alignItems="center" space={2}>
+                          <Text
+                            fontSize="sm"
+                            color="white"
+                            fontFamily="mono"
+                            flex={1}
+                          >
+                            {save.displayName}
+                          </Text>
+                          {save.isAIMode && (
+                            <Box
+                              bg="rgba(255, 165, 0, 0.2)"
+                              borderWidth={1}
+                              borderColor="rgba(255, 165, 0, 0.5)"
+                              borderRadius="sm"
+                              px={1}
+                              py={0.5}
+                            >
+                              <Text
+                                fontSize="xs"
+                                color="#ffa500"
+                                fontFamily="mono"
+                              >
+                                AI
+                              </Text>
+                            </Box>
+                          )}
+                        </HStack>
+                        
+                        <Text
+                          fontSize="xs"
+                          color="rgba(255, 255, 255, 0.6)"
+                          fontFamily="mono"
+                        >
+                          {formatTimeDisplay(save.timestamp)}
+                        </Text>
+                      </VStack>
+
+                      {/* 状态指示 */}
+                      {loadingId === save.id ? (
+                        <Spinner size="sm" color={mainColor} />
+                      ) : (
+                        <IconFont name="chevron-forward" size={16} color={mainColor} />
+                      )}
+                    </HStack>
+                  </Pressable>
+                </HStack>
+              ))}
+            </VStack>
+          </ScrollView>
+        )}
+
+        {/* 底部按钮 */}
+        <Box
+          bg={bottomBackgroundColor}
+          borderBottomRadius="lg"
+          borderTopWidth={1}
+          borderTopColor={bottomBorderColor}
+          p={4}
+        >
+          <Button
+            onPress={onClose}
+            bg={mainColor}
+            _text={{ 
+              color: mainColor === '#00ff88' ? "black" : "white", 
+              fontWeight: "bold" 
+            }}
+            _pressed={{ 
+              bg: mainColor === '#ff0080' ? "#cc0066" : 
+                  mainColor === '#00ff88' ? "#00cc6a" :
+                  mainColor.replace('0.9', '0.6')
+            }}
+            w="100%"
+          >
+            {savedGames.length === 0 ? "知道了" : "关闭"}
+          </Button>
         </Box>
-      </Modal>
-    </>
+      </Box>
+    </Modal>
   );
 };
 

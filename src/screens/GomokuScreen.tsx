@@ -557,7 +557,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
 
           <Box p={4}>
             <Text color="white" fontSize="md" textAlign="center">
-              确定要退出当前游戏吗？进度将不会保存。
+              确定要退出游戏返回主菜单吗？
             </Text>
           </Box>
 

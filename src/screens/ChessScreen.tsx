@@ -630,7 +630,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           {/* 内容 */}
           <Box p={4}>
             <Text color="white" fontSize="md" textAlign="center">
-              确定要退出游戏返回主菜单吗？当前游戏进度将会丢失。
+              确定要退出游戏返回主菜单吗？
             </Text>
           </Box>
 
