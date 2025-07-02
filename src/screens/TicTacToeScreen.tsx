@@ -9,6 +9,7 @@ import {
   Button,
   Pressable,
 } from 'native-base';
+import { Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import TicTacToeBoard from '../components/TicTacToeBoard';
 import GameControls from '../components/GameControls';
@@ -18,6 +19,8 @@ import type { TicTacToeScreenProps } from '../types/navigation';
 import IconFont from 'react-native-vector-icons/Ionicons';
 import { View } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import { useSaveGame } from '../hooks/useSaveGame';
+import SaveGameModal from '../components/SaveGameModal';
 
 const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   const {
@@ -30,11 +33,27 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
     setAIDifficultyLevel,
     undoMove,
     canUndo,
+    restoreGameState,
+    aiDifficulty,
   } = useTicTacToe();
+
+  // 存档相关
+  const {
+    savedGames,
+    isSaving,
+    isLoading: isSaveLoading,
+    saveGame: handleSaveGame,
+    loadGame: handleLoadGame,
+    refreshSaves,
+    canSave,
+    startNewGame,
+    currentGameId,
+  } = useSaveGame('tictactoe');
 
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   // 标记是否已确认退出
   const [isConfirmedExit, setIsConfirmedExit] = useState(false);
 
@@ -73,6 +92,64 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
       navigation.dispatch(CommonActions.goBack());
     }, 0);
   };
+
+  // 自动保存游戏状态
+  const autoSaveGame = React.useCallback((isFirstMove: boolean = false) => {
+    console.log(`[TicTacToeScreen] autoSaveGame called, isFirstMove: ${isFirstMove}, currentGameId: ${currentGameId}`);
+    if (canSave(gameState)) {
+      // 如果是第一次移动或者没有当前游戏ID，则创建新存档
+      const isNewGame = isFirstMove || !currentGameId;
+      handleSaveGame(gameState, isAIMode, aiDifficulty, isNewGame);
+    }
+  }, [gameState, isAIMode, aiDifficulty, canSave, handleSaveGame, currentGameId]);
+
+  // 监听游戏状态变化，自动保存
+  React.useEffect(() => {
+    // 检查棋盘是否有棋子
+    const hasPieces = gameState.board.some(row => row.some(cell => cell !== null));
+    if (hasPieces && canSave(gameState)) {
+      // 延迟保存，确保游戏状态已完全更新
+      const timer = setTimeout(() => {
+        // 计算棋盘上的棋子数量来判断是否是第一次移动
+        const pieceCount = gameState.board.flat().filter(cell => cell !== null).length;
+        const isFirstMove = !currentGameId && pieceCount === 1;
+        console.log(`[TicTacToeScreen] 检测到游戏状态变化，自动保存，isFirstMove: ${isFirstMove}, 棋子数: ${pieceCount}`);
+        autoSaveGame(isFirstMove);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.board, autoSaveGame, currentGameId, canSave]);
+
+  // 处理存档加载
+  const onLoadSave = React.useCallback(async (saveId: string) => {
+    const savedGame = await handleLoadGame(saveId);
+    if (savedGame) {
+      console.log(`[TicTacToeScreen] 加载存档成功，恢复游戏状态`);
+      restoreGameState(
+        savedGame.gameState,
+        savedGame.isAIMode,
+        savedGame.aiDifficulty as AIDifficulty
+      );
+    }
+  }, [handleLoadGame, restoreGameState]);
+
+  // 重置游戏并开始新的存档
+  const handleResetGame = React.useCallback(() => {
+    console.log(`[TicTacToeScreen] 重置游戏并开始新存档`);
+    startNewGame();
+    resetGame();
+  }, [startNewGame, resetGame]);
+
+  // 包装原始的playerMove，添加自动保存
+  const handlePlayerMove = React.useCallback((position: { row: number; col: number }) => {
+    const success = playerMove(position);
+    if (success) {
+      console.log(`[TicTacToeScreen] 落子成功`);
+      // 落子成功后，useEffect会自动处理保存
+    }
+    return success;
+  }, [playerMove]);
 
   return (
     <Box flex={1} bg="#000015" safeArea>
@@ -149,27 +226,30 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
         <Box flex={1}>
           <HStack space={2} justifyContent="flex-end">
             <Pressable
+              onPress={() => setShowSaveModal(true)}
+              _pressed={{ bg: "rgba(0, 255, 136, 0.3)" }}
+              borderRadius="lg"
+              bg="rgba(0, 255, 136, 0.2)"
+              borderWidth={2}
+              borderColor="rgba(0, 255, 136, 0.6)"
+              px={2}
+              py={2}
+              shadow={3}
+            >
+              <IconFont name="archive" size={16} color="rgba(255, 255, 255, 0.9)" />
+            </Pressable>
+            <Pressable
               onPress={() => setShowRules(true)}
               _pressed={{ bg: "rgba(0, 255, 136, 0.3)" }}
               borderRadius="lg"
               bg="rgba(0, 255, 136, 0.2)"
               borderWidth={2}
               borderColor="rgba(0, 255, 136, 0.6)"
-              px={3}
+              px={2}
               py={2}
               shadow={3}
             >
-              <HStack alignItems="center" space={1}>
-                <IconFont name="book" size={14} color="rgba(255, 255, 255, 0.9)" />
-                <Text
-                  color="rgba(255, 255, 255, 0.9)"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  规则
-                </Text>
-              </HStack>
+              <IconFont name="book" size={16} color="rgba(255, 255, 255, 0.9)" />
             </Pressable>
           </HStack>
         </Box>
@@ -259,7 +339,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                   <HStack space={2} w="100%">
                     {/* 重新开始按钮 */}
                     <Pressable
-                      onPress={resetGame}
+                      onPress={handleResetGame}
                       bg="rgba(0, 255, 136, 0.2)"
                       borderWidth={1}
                       borderColor="rgba(0, 255, 136, 0.6)"
@@ -320,7 +400,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
 
           <TicTacToeBoard
             board={gameState.board}
-            onCellPress={playerMove}
+            onCellPress={handlePlayerMove}
             disabled={gameState.isGameOver || (isAIMode && gameState.currentPlayer === 'O')}
           />
         </Box>
@@ -333,7 +413,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           isAIMode={isAIMode}
           isAIThinking={isAIThinking}
           canUndo={canUndo}
-          onReset={resetGame}
+          onReset={handleResetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
         />
@@ -343,7 +423,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
       <Modal
         isVisible={showRules}
         onBackdropPress={() => setShowRules(false)}
-        onBackButtonPress={() => setShowRules(false)}
+        {...(Platform.OS === 'android' && { onBackButtonPress: () => setShowRules(false) })}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         backdropOpacity={0.7}
@@ -443,7 +523,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
       <Modal
         isVisible={showExitDialog}
         onBackdropPress={() => setShowExitDialog(false)}
-        onBackButtonPress={() => setShowExitDialog(false)}
+        {...(Platform.OS === 'android' && { onBackButtonPress: () => setShowExitDialog(false) })}
         animationIn="zoomIn"
         animationOut="zoomOut"
         backdropOpacity={0.7}
@@ -526,6 +606,17 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           </Box>
         </Box>
       </Modal>
+
+      {/* 存档管理弹框 */}
+      <SaveGameModal
+        isVisible={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        savedGames={savedGames}
+        onLoadGame={onLoadSave}
+        isLoading={isSaveLoading}
+        gameType="tictactoe"
+        themeColor="rgba(0, 255, 136, 0.9)"
+      />
 
     </Box>
   );

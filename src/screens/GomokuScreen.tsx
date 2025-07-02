@@ -9,6 +9,7 @@ import {
   Pressable,
   Button,
 } from 'native-base';
+import { Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import GomokuBoard from '../components/GomokuBoard';
 import GomokuControls from '../components/GomokuControls';
@@ -18,6 +19,8 @@ import type { GomokuScreenProps } from '../types/navigation';
 import IconFont from 'react-native-vector-icons/Ionicons';
 import { View } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import { useSaveGame } from '../hooks/useSaveGame';
+import SaveGameModal from '../components/SaveGameModal';
 
 const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
   const {
@@ -30,11 +33,27 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
     setAIDifficultyLevel,
     undoMove,
     canUndo,
+    restoreGameState,
+    aiDifficulty,
   } = useGomoku();
+
+  // 存档相关
+  const {
+    savedGames,
+    isSaving,
+    isLoading: isSaveLoading,
+    saveGame: handleSaveGame,
+    loadGame: handleLoadGame,
+    refreshSaves,
+    canSave,
+    startNewGame,
+    currentGameId,
+  } = useSaveGame('gomoku');
 
   // 弹框状态
   const [showRules, setShowRules] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   // 标记是否已确认退出
   const [isConfirmedExit, setIsConfirmedExit] = useState(false);
 
@@ -74,8 +93,57 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
     }, 0);
   };
 
+  // 自动保存游戏状态
+  const autoSaveGame = React.useCallback((isFirstMove: boolean = false) => {
+    console.log(`[GomokuScreen] autoSaveGame called, isFirstMove: ${isFirstMove}, currentGameId: ${currentGameId}`);
+    if (canSave(gameState)) {
+      // 如果是第一次移动或者没有当前游戏ID，则创建新存档
+      const isNewGame = isFirstMove || !currentGameId;
+      handleSaveGame(gameState, isAIMode, aiDifficulty, isNewGame);
+    }
+  }, [gameState, isAIMode, aiDifficulty, canSave, handleSaveGame, currentGameId]);
+
+  // 监听游戏状态变化，自动保存
+  React.useEffect(() => {
+    // 只有在有移动发生时才保存
+    if (gameState.moveHistory && gameState.moveHistory.length > 0 && canSave(gameState)) {
+      // 延迟保存，确保游戏状态已完全更新
+      const timer = setTimeout(() => {
+        const isFirstMove = !currentGameId && gameState.moveHistory.length === 1;
+        console.log(`[GomokuScreen] 检测到游戏状态变化，自动保存，isFirstMove: ${isFirstMove}, 移动数: ${gameState.moveHistory.length}`);
+        autoSaveGame(isFirstMove);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.moveHistory, autoSaveGame, currentGameId, canSave]);
+
+  // 处理存档加载
+  const onLoadSave = React.useCallback(async (saveId: string) => {
+    const savedGame = await handleLoadGame(saveId);
+    if (savedGame) {
+      console.log(`[GomokuScreen] 加载存档成功，恢复游戏状态`);
+      restoreGameState(
+        savedGame.gameState,
+        savedGame.isAIMode,
+        savedGame.aiDifficulty as AIDifficulty
+      );
+    }
+  }, [handleLoadGame, restoreGameState]);
+
+  // 重置游戏并开始新的存档
+  const handleResetGame = React.useCallback(() => {
+    console.log(`[GomokuScreen] 重置游戏并开始新存档`);
+    startNewGame();
+    resetGame();
+  }, [startNewGame, resetGame]);
+
   const handleCellPress = (position: { row: number; col: number }) => {
-    placePiece(position);
+    const success = placePiece(position);
+    if (success) {
+      console.log(`[GomokuScreen] 落子成功`);
+      // 落子成功后，useEffect会自动处理保存
+    }
   };
 
   return (
@@ -153,27 +221,30 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
         <Box flex={1}>
           <HStack space={2} justifyContent="flex-end">
             <Pressable
+              onPress={() => setShowSaveModal(true)}
+              _pressed={{ bg: "rgba(139, 69, 19, 0.3)" }}
+              borderRadius="lg"
+              bg="rgba(139, 69, 19, 0.2)"
+              borderWidth={2}
+              borderColor="rgba(139, 69, 19, 0.6)"
+              px={2}
+              py={2}
+              shadow={3}
+            >
+              <IconFont name="archive" size={16} color="rgba(255, 255, 255, 0.9)" />
+            </Pressable>
+            <Pressable
               onPress={() => setShowRules(true)}
               _pressed={{ bg: "rgba(139, 69, 19, 0.3)" }}
               borderRadius="lg"
               bg="rgba(139, 69, 19, 0.2)"
               borderWidth={2}
               borderColor="rgba(139, 69, 19, 0.6)"
-              px={3}
+              px={2}
               py={2}
               shadow={3}
             >
-              <HStack alignItems="center" space={1}>
-                <IconFont name="book" size={14} color="rgba(255, 255, 255, 0.9)" />
-                <Text
-                  color="rgba(255, 255, 255, 0.9)"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  fontFamily="mono"
-                >
-                  规则
-                </Text>
-              </HStack>
+              <IconFont name="book" size={16} color="rgba(255, 255, 255, 0.9)" />
             </Pressable>
           </HStack>
         </Box>
@@ -264,7 +335,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
                   <HStack space={2} w="100%">
                     {/* 重新开始按钮 */}
                     <Pressable
-                      onPress={resetGame}
+                      onPress={handleResetGame}
                       bg="rgba(128, 0, 255, 0.2)"
                       borderWidth={1}
                       borderColor="rgba(128, 0, 255, 0.6)"
@@ -340,7 +411,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
           isAIMode={isAIMode}
           isAIThinking={isAIThinking}
           canUndo={canUndo}
-          onReset={resetGame}
+          onReset={handleResetGame}
           onUndo={undoMove}
           onToggleAI={toggleAIMode}
         />
@@ -350,7 +421,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
       <Modal
         isVisible={showRules}
         onBackdropPress={() => setShowRules(false)}
-        onBackButtonPress={() => setShowRules(false)}
+        {...(Platform.OS === 'android' && { onBackButtonPress: () => setShowRules(false) })}
         animationIn="slideInUp"
         animationOut="slideOutDown"
         backdropOpacity={0.7}
@@ -439,7 +510,7 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
       <Modal
         isVisible={showExitDialog}
         onBackdropPress={() => setShowExitDialog(false)}
-        onBackButtonPress={() => setShowExitDialog(false)}
+        {...(Platform.OS === 'android' && { onBackButtonPress: () => setShowExitDialog(false) })}
         animationIn="zoomIn"
         animationOut="zoomOut"
         backdropOpacity={0.7}
@@ -534,6 +605,17 @@ const GomokuScreen: React.FC<GomokuScreenProps> = ({ navigation }) => {
           </Box>
         </Box>
       </Modal>
+
+      {/* 存档管理弹框 */}
+      <SaveGameModal
+        isVisible={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        savedGames={savedGames}
+        onLoadGame={onLoadSave}
+        isLoading={isSaveLoading}
+        gameType="gomoku"
+        themeColor="rgba(139, 69, 19, 0.9)"
+      />
     </Box>
   );
 };

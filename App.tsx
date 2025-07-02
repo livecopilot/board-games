@@ -14,7 +14,7 @@
  */
 
 import React from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar, useColorScheme, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NativeBaseProvider, extendTheme } from 'native-base';
@@ -23,6 +23,17 @@ import AppNavigator from './src/navigation/AppNavigator';
 
 // 启用原生屏幕优化
 enableScreens();
+
+// iOS BackHandler polyfill - 修复NativeBase在iOS上的兼容性问题
+if (Platform.OS === 'ios') {
+  const { BackHandler } = require('react-native');
+  if (!BackHandler.removeEventListener) {
+    BackHandler.removeEventListener = () => {};
+  }
+  if (!BackHandler.addEventListener) {
+    BackHandler.addEventListener = () => ({ remove: () => {} });
+  }
+}
 
 // 科技风格主题
 const theme = extendTheme({

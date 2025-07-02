@@ -148,6 +148,31 @@ export const useTicTacToe = () => {
     setIsAIThinking(false);
   }, [gameHistory, isAIThinking]);
 
+  // 恢复游戏状态
+  const restoreGameState = useCallback(
+    (restoredState: GameState, restoredAIMode: boolean, restoredAIDifficulty?: AIDifficulty) => {
+      // 清除AI移动的定时器
+      if (aiMoveTimeoutRef.current) {
+        clearTimeout(aiMoveTimeoutRef.current);
+        aiMoveTimeoutRef.current = null;
+      }
+
+      setGameState(restoredState);
+      setGameHistory([restoredState]);
+      setIsAIMode(restoredAIMode);
+      if (restoredAIDifficulty) {
+        setAIDifficulty(restoredAIDifficulty);
+      }
+      setIsAIThinking(false);
+
+      // 如果是AI模式且轮到AI，触发AI移动
+      if (restoredAIMode && restoredState.currentPlayer === "O" && !restoredState.isGameOver) {
+        scheduleAIMove(restoredState);
+      }
+    },
+    [scheduleAIMove]
+  );
+
   return {
     gameState,
     isAIMode,
@@ -159,5 +184,6 @@ export const useTicTacToe = () => {
     setAIDifficultyLevel,
     undoMove,
     canUndo: gameHistory.length > 1 && !isAIThinking,
+    restoreGameState,
   };
 };

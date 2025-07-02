@@ -188,6 +188,28 @@ export const useGomoku = () => {
   // 检查是否可以撤销
   const canUndo = gameState.moveHistory.length > 0 && !isAIThinking;
 
+  // 恢复游戏状态
+  const restoreGameState = useCallback(
+    (restoredState: GomokuGameState, restoredAIMode: boolean, restoredAIDifficulty?: AIDifficulty) => {
+      if (aiTimeoutRef.current) {
+        clearTimeout(aiTimeoutRef.current);
+      }
+
+      setGameState(restoredState);
+      setIsAIMode(restoredAIMode);
+      if (restoredAIDifficulty) {
+        setAiDifficulty(restoredAIDifficulty);
+      }
+      setIsAIThinking(false);
+
+      // 如果是AI模式且轮到AI，触发AI移动
+      if (restoredAIMode && restoredState.currentPlayer === "white" && !restoredState.isGameOver) {
+        setTimeout(() => scheduleAIMove(), 100);
+      }
+    },
+    [scheduleAIMove]
+  );
+
   return {
     gameState,
     isAIMode,
@@ -200,5 +222,6 @@ export const useGomoku = () => {
     toggleAIMode,
     setAIDifficultyLevel,
     canUndo,
+    restoreGameState,
   };
 };
