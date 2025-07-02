@@ -329,13 +329,13 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                         <Text
                           fontSize="md"
                           fontWeight="bold"
-                          color={gameState.isInCheck && gameState.currentPlayer === 'black' ? '#ff3030' : gameState.currentPlayer === 'black' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
+                          color={gameState.blackInCheck && gameState.currentPlayer === 'black' ? '#ff3030' : gameState.currentPlayer === 'black' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
                           fontFamily="mono"
                           letterSpacing={0.5}
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.isInCheck && gameState.currentPlayer === 'black' 
+                          {gameState.blackInCheck && gameState.currentPlayer === 'black' 
                             ? '⚠️ 你被将军了！' 
                             : gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
                         </Text>
@@ -445,6 +445,8 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           isAIMode={isAIMode}
           isAIThinking={isAIThinking}
           isInCheck={gameState.isInCheck}
+          redInCheck={gameState.redInCheck}
+          blackInCheck={gameState.blackInCheck}
           canUndo={canUndo}
           onReset={handleResetGame}
           onUndo={undoMove}

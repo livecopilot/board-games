@@ -114,7 +114,7 @@ export const useChess = () => {
       const inCheck = nextPlayer === "red" ? redInCheck : blackInCheck;
 
       console.log(`[executeMove] 移动完成: ${prevState.currentPlayer} -> ${nextPlayer}`);
-      console.log(`[executeMove] 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
+      console.log(`[executeMove] 双方将军状态 - 红方: ${redInCheck}, 黑方: ${blackInCheck}`);
 
       return {
         ...prevState,
@@ -182,7 +182,7 @@ export const useChess = () => {
           const inCheck = nextPlayer === "red" ? redInCheck : blackInCheck;
 
           console.log(`[AI移动] AI移动完成: ${currentState.currentPlayer} -> ${nextPlayer}`);
-          console.log(`[AI移动] 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
+          console.log(`[AI移动] 双方将军状态 - 红方: ${redInCheck}, 黑方: ${blackInCheck}`);
 
           setIsAIThinking(false);
 

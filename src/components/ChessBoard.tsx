@@ -373,7 +373,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     const kingInCheck = (piece.player === 'red' && redInCheck) || (piece.player === 'black' && blackInCheck);
     
     if (kingInCheck) {
-      console.log(`[ChessBoard] 🚨 ${piece.player}方王棋被将军！位置: (${row},${col})`);
+      console.log(`[棋盘显示] 🚨 ${piece.player}方王棋被将军，位置: (${row},${col})`);
     }
     
     return kingInCheck;

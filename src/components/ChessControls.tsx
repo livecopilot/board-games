@@ -15,7 +15,9 @@ interface ChessControlsProps {
   isGameOver: boolean;
   isAIMode: boolean;
   isAIThinking: boolean;
-  isInCheck?: boolean;
+  isInCheck?: boolean; // 向后兼容，已弃用
+  redInCheck?: boolean; // 红方是否被将军
+  blackInCheck?: boolean; // 黑方是否被将军
   canUndo: boolean;
   onReset: () => void;
   onUndo: () => void;
@@ -29,6 +31,8 @@ const ChessControls: React.FC<ChessControlsProps> = ({
   isAIMode,
   isAIThinking,
   isInCheck,
+  redInCheck,
+  blackInCheck,
   canUndo,
   onReset,
   onUndo,
@@ -54,11 +58,20 @@ const ChessControls: React.FC<ChessControlsProps> = ({
       return '🤖 AI思考中...';
     }
 
-    if (isInCheck) {
+    // 优先显示将军状态，无论轮到谁
+    if (redInCheck) {
       if (isAIMode) {
-        return currentPlayer === 'red' ? '⚠️ 你被将军了！' : '⚠️ AI被将军了！';
+        return '⚠️ 你被将军了！'; // 在AI模式下，红方就是玩家
       } else {
-        return currentPlayer === 'red' ? '⚠️ 红方被将军！' : '⚠️ 黑方被将军！';
+        return '⚠️ 红方被将军！';
+      }
+    }
+    
+    if (blackInCheck) {
+      if (isAIMode) {
+        return '⚠️ AI被将军了！';
+      } else {
+        return '⚠️ 黑方被将军！';
       }
     }
     
@@ -84,7 +97,8 @@ const ChessControls: React.FC<ChessControlsProps> = ({
       return 'rgba(255, 215, 0, 0.9)'; // 金色
     }
     
-    if (isInCheck) {
+    // 优先显示将军状态的颜色
+    if (redInCheck || blackInCheck) {
       return '#ff3030'; // 红色警告
     }
     
@@ -124,12 +138,28 @@ const ChessControls: React.FC<ChessControlsProps> = ({
               <VStack alignItems="center" mt={1} space={0.5}>
                 <Text
                   fontSize="xs"
-                  color={currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)'}
+                  color={
+                    // 如果有将军状态，根据被将军的一方显示颜色
+                    redInCheck ? 'white' : 
+                    blackInCheck ? 'rgba(255, 255, 255, 0.6)' :
+                    // 否则根据当前玩家显示颜色
+                    (currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)')
+                  }
                   fontFamily="mono"
                 >
-                  {isAIMode 
-                    ? (currentPlayer === 'red' ? '红方（你）' : '黑方（AI）')
-                    : (currentPlayer === 'red' ? '红方（我方）' : '黑方（我方）')}
+                  {
+                    // 如果有将军状态，显示被将军一方的信息
+                    redInCheck ? (
+                      isAIMode ? '红方（你）' : '红方（我方）'
+                    ) : blackInCheck ? (
+                      isAIMode ? '黑方（AI）' : '黑方（我方）'
+                    ) : (
+                      // 否则显示当前轮到的玩家信息
+                      isAIMode 
+                        ? (currentPlayer === 'red' ? '红方（你）' : '黑方（AI）')
+                        : (currentPlayer === 'red' ? '红方（我方）' : '黑方（我方）')
+                    )
+                  }
                 </Text>
               </VStack>
             )}
