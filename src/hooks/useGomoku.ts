@@ -23,14 +23,43 @@ export const useGomoku = () => {
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 添加组件挂载状态跟踪
+  const isMountedRef = useRef(true);
 
   // 清理AI定时器
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = null;
       }
     };
+  }, []);
+
+  // 安全的 setState 函数
+  const safeSetGameState = useCallback((newState: GomokuGameState | ((prev: GomokuGameState) => GomokuGameState)) => {
+    if (isMountedRef.current) {
+      setGameState(newState);
+    }
+  }, []);
+
+  const safeSetIsAIThinking = useCallback((thinking: boolean) => {
+    if (isMountedRef.current) {
+      setIsAIThinking(thinking);
+    }
+  }, []);
+
+  const safeSetIsAIMode = useCallback((mode: boolean | ((prev: boolean) => boolean)) => {
+    if (isMountedRef.current) {
+      setIsAIMode(mode);
+    }
+  }, []);
+
+  const safeSetAiDifficulty = useCallback((difficulty: AIDifficulty) => {
+    if (isMountedRef.current) {
+      setAiDifficulty(difficulty);
+    }
   }, []);
 
   // 检查位置是否可以落子

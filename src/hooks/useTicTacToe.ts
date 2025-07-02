@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { GameState, Position, CellValue, AIDifficulty } from "../types";
 import { createEmptyBoard, checkWinner, makeMove, isValidMove, getTicTacToeAIMove } from "../utils/gameLogic";
 
@@ -17,6 +17,50 @@ export const useTicTacToe = () => {
 
   // 使用ref来跟踪AI移动状态，避免循环调用
   const aiMoveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 添加组件挂载状态跟踪
+  const isMountedRef = useRef(true);
+
+  // 组件卸载时的清理
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (aiMoveTimeoutRef.current) {
+        clearTimeout(aiMoveTimeoutRef.current);
+        aiMoveTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // 安全的 setState 函数
+  const safeSetGameState = useCallback((newState: GameState | ((prev: GameState) => GameState)) => {
+    if (isMountedRef.current) {
+      setGameState(newState);
+    }
+  }, []);
+
+  const safeSetGameHistory = useCallback((newHistory: GameState[] | ((prev: GameState[]) => GameState[])) => {
+    if (isMountedRef.current) {
+      setGameHistory(newHistory);
+    }
+  }, []);
+
+  const safeSetIsAIThinking = useCallback((thinking: boolean) => {
+    if (isMountedRef.current) {
+      setIsAIThinking(thinking);
+    }
+  }, []);
+
+  const safeSetIsAIMode = useCallback((mode: boolean | ((prev: boolean) => boolean)) => {
+    if (isMountedRef.current) {
+      setIsAIMode(mode);
+    }
+  }, []);
+
+  const safeSetAIDifficulty = useCallback((difficulty: AIDifficulty) => {
+    if (isMountedRef.current) {
+      setAIDifficulty(difficulty);
+    }
+  }, []);
 
   // 重置游戏
   const resetGame = useCallback(() => {
@@ -26,21 +70,23 @@ export const useTicTacToe = () => {
       aiMoveTimeoutRef.current = null;
     }
 
+    if (!isMountedRef.current) return;
+
     const newState: GameState = {
       board: createEmptyBoard(),
       currentPlayer: "X",
       isGameOver: false,
       winner: null,
     };
-    setGameState(newState);
-    setGameHistory([newState]);
-    setIsAIThinking(false);
-  }, []);
+    safeSetGameState(newState);
+    safeSetGameHistory([newState]);
+    safeSetIsAIThinking(false);
+  }, [safeSetGameState, safeSetGameHistory, safeSetIsAIThinking]);
 
   // 执行移动（内部函数，不直接触发AI）
   const executeMove = useCallback(
     (position: Position, triggerAI: boolean = true) => {
-      if (gameState.isGameOver || !isValidMove(gameState.board, position)) {
+      if (!isMountedRef.current || gameState.isGameOver || !isValidMove(gameState.board, position)) {
         return false;
       }
 
@@ -55,8 +101,8 @@ export const useTicTacToe = () => {
         winner,
       };
 
-      setGameState(newState);
-      setGameHistory((prev) => [...prev, newState]);
+      safeSetGameState(newState);
+      safeSetGameHistory((prev) => [...prev, newState]);
 
       // 只有在需要触发AI且满足条件时才触发AI移动
       if (triggerAI && isAIMode && !isGameOver && newState.currentPlayer === "O") {
@@ -65,13 +111,13 @@ export const useTicTacToe = () => {
 
       return true;
     },
-    [gameState, isAIMode]
+    [gameState, isAIMode, safeSetGameState, safeSetGameHistory]
   );
 
   // 玩家移动
   const playerMove = useCallback(
     (position: Position) => {
-      if (isAIThinking) return false;
+      if (!isMountedRef.current || isAIThinking) return false;
       return executeMove(position, true);
     },
     [executeMove, isAIThinking]
@@ -80,9 +126,10 @@ export const useTicTacToe = () => {
   // 调度AI移动
   const scheduleAIMove = useCallback(
     (currentState: GameState) => {
-      if (isAIThinking || currentState.isGameOver || currentState.currentPlayer !== "O") return;
+      if (!isMountedRef.current || isAIThinking || currentState.isGameOver || currentState.currentPlayer !== "O")
+        return;
 
-      setIsAIThinking(true);
+      safeSetIsAIThinking(true);
 
       // 根据难度设置思考时间
       const thinkingTime = {
@@ -92,6 +139,11 @@ export const useTicTacToe = () => {
       }[aiDifficulty];
 
       aiMoveTimeoutRef.current = setTimeout(() => {
+        // 检查组件是否仍然挂载
+        if (!isMountedRef.current) {
+          return;
+        }
+
         // 直接在这里执行AI移动，确保使用正确的状态
         const aiPosition = getTicTacToeAIMove(currentState.board, aiDifficulty);
         if (aiPosition && isValidMove(currentState.board, aiPosition)) {
@@ -106,31 +158,35 @@ export const useTicTacToe = () => {
             winner,
           };
 
-          setGameState(newState);
-          setGameHistory((prev) => [...prev, newState]);
+          safeSetGameState(newState);
+          safeSetGameHistory((prev) => [...prev, newState]);
         }
 
-        setIsAIThinking(false);
+        safeSetIsAIThinking(false);
         aiMoveTimeoutRef.current = null;
       }, thinkingTime);
     },
-    [aiDifficulty, isAIThinking]
+    [aiDifficulty, isAIThinking, safeSetIsAIThinking, safeSetGameState, safeSetGameHistory]
   );
 
   // 切换AI模式
   const toggleAIMode = useCallback(() => {
-    setIsAIMode((prev) => !prev);
+    if (!isMountedRef.current) return;
+    safeSetIsAIMode((prev) => !prev);
     resetGame();
-  }, [resetGame]);
+  }, [resetGame, safeSetIsAIMode]);
 
   // 设置AI难度
-  const setAIDifficultyLevel = useCallback((difficulty: AIDifficulty) => {
-    setAIDifficulty(difficulty);
-  }, []);
+  const setAIDifficultyLevel = useCallback(
+    (difficulty: AIDifficulty) => {
+      safeSetAIDifficulty(difficulty);
+    },
+    [safeSetAIDifficulty]
+  );
 
   // 撤销移动
   const undoMove = useCallback(() => {
-    if (gameHistory.length <= 1 || isAIThinking) {
+    if (!isMountedRef.current || gameHistory.length <= 1 || isAIThinking) {
       return;
     }
 
@@ -143,34 +199,36 @@ export const useTicTacToe = () => {
     const newHistory = gameHistory.slice(0, -1);
     const previousState = newHistory[newHistory.length - 1];
 
-    setGameState(previousState);
-    setGameHistory(newHistory);
-    setIsAIThinking(false);
-  }, [gameHistory, isAIThinking]);
+    safeSetGameState(previousState);
+    safeSetGameHistory(newHistory);
+    safeSetIsAIThinking(false);
+  }, [gameHistory, isAIThinking, safeSetGameState, safeSetGameHistory, safeSetIsAIThinking]);
 
   // 恢复游戏状态
   const restoreGameState = useCallback(
     (restoredState: GameState, restoredAIMode: boolean, restoredAIDifficulty?: AIDifficulty) => {
+      if (!isMountedRef.current) return;
+
       // 清除AI移动的定时器
       if (aiMoveTimeoutRef.current) {
         clearTimeout(aiMoveTimeoutRef.current);
         aiMoveTimeoutRef.current = null;
       }
 
-      setGameState(restoredState);
-      setGameHistory([restoredState]);
-      setIsAIMode(restoredAIMode);
+      safeSetGameState(restoredState);
+      safeSetGameHistory([restoredState]);
+      safeSetIsAIMode(restoredAIMode);
       if (restoredAIDifficulty) {
-        setAIDifficulty(restoredAIDifficulty);
+        safeSetAIDifficulty(restoredAIDifficulty);
       }
-      setIsAIThinking(false);
+      safeSetIsAIThinking(false);
 
       // 如果是AI模式且轮到AI，触发AI移动
       if (restoredAIMode && restoredState.currentPlayer === "O" && !restoredState.isGameOver) {
         scheduleAIMove(restoredState);
       }
     },
-    [scheduleAIMove]
+    [scheduleAIMove, safeSetGameState, safeSetGameHistory, safeSetIsAIMode, safeSetAIDifficulty, safeSetIsAIThinking]
   );
 
   return {

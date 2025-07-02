@@ -26,14 +26,48 @@ export const useChess = () => {
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
   // 清理AI定时器
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = null;
       }
     };
+  }, []);
+
+  // 安全的 setState 函数
+  const safeSetGameState = useCallback((newState: ChessGameState | ((prev: ChessGameState) => ChessGameState)) => {
+    if (isMountedRef.current) {
+      setGameState(newState);
+    }
+  }, []);
+
+  const safeSetSelectedPiece = useCallback((piece: Position | null) => {
+    if (isMountedRef.current) {
+      setSelectedPiece(piece);
+    }
+  }, []);
+
+  const safeSetIsAIThinking = useCallback((thinking: boolean) => {
+    if (isMountedRef.current) {
+      setIsAIThinking(thinking);
+    }
+  }, []);
+
+  const safeSetIsAIMode = useCallback((mode: boolean | ((prev: boolean) => boolean)) => {
+    if (isMountedRef.current) {
+      setIsAIMode(mode);
+    }
+  }, []);
+
+  const safeSetAiDifficulty = useCallback((difficulty: AIDifficulty) => {
+    if (isMountedRef.current) {
+      setAiDifficulty(difficulty);
+    }
   }, []);
 
   // 获取当前选中棋子的可移动位置

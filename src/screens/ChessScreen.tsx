@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Text,
@@ -57,8 +57,18 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
   const [showRules, setShowRules] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  // 标记是否已确认退出
-  const [isConfirmedExit, setIsConfirmedExit] = useState(false);
+  // 使用 ref 来跟踪确认退出状态，避免闭包问题
+  const isConfirmedExitRef = useRef(false);
+
+  // 添加组件挂载状态跟踪
+  const isMountedRef = useRef(true);
+
+  // 组件卸载时的清理
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // 设置默认困难难度
   React.useEffect(() => {
@@ -69,7 +79,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       // 如果已经确认退出，允许正常返回
-      if (isConfirmedExit) {
+      if (isConfirmedExitRef.current) {
         return;
       }
       
@@ -77,23 +87,28 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
       e.preventDefault();
       
       // 显示退出确认弹框
-      setShowExitDialog(true);
+      if (isMountedRef.current) {
+        setShowExitDialog(true);
+      }
     });
 
     return unsubscribe;
-  }, [navigation, isConfirmedExit]);
+  }, [navigation]);
 
   const handleBackPress = () => {
-    setShowExitDialog(true);
+    if (isMountedRef.current) {
+      setShowExitDialog(true);
+    }
   };
 
   const confirmExit = () => {
+    if (!isMountedRef.current) return;
+    
     setShowExitDialog(false);
-    setIsConfirmedExit(true);
-    // 使用setTimeout确保状态更新完成后再执行goBack
-    setTimeout(() => {
-      navigation.dispatch(CommonActions.goBack());
-    }, 0);
+    isConfirmedExitRef.current = true;
+    
+    // 立即执行导航
+    navigation.dispatch(CommonActions.goBack());
   };
 
   // 自动保存游戏状态

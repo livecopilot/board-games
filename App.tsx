@@ -2,7 +2,7 @@
  * @Author: changwj yoursfengzhilian@gmail.com
  * @Date: 2025-06-27 12:51:39
  * @LastEditors: changwj yoursfengzhilian@gmail.com
- * @LastEditTime: 2025-06-30 15:06:12
+ * @LastEditTime: 2025-07-02 12:45:03
  * @FilePath: /board-games/App.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,7 +14,7 @@
  */
 
 import React from 'react';
-import { StatusBar, useColorScheme, Platform } from 'react-native';
+import { StatusBar, useColorScheme, Platform, BackHandler } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NativeBaseProvider, extendTheme } from 'native-base';
@@ -24,15 +24,13 @@ import AppNavigator from './src/navigation/AppNavigator';
 // 启用原生屏幕优化
 enableScreens();
 
-// iOS BackHandler polyfill - 修复NativeBase在iOS上的兼容性问题
-if (Platform.OS === 'ios') {
-  const { BackHandler } = require('react-native');
-  if (!BackHandler.removeEventListener) {
-    BackHandler.removeEventListener = () => {};
-  }
-  if (!BackHandler.addEventListener) {
-    BackHandler.addEventListener = () => ({ remove: () => {} });
-  }
+// 修复 react-native-modal 在某些版本的 BackHandler 兼容性问题
+if (!(BackHandler as any).removeEventListener) {
+  (BackHandler as any).removeEventListener = (eventType: string, handler: () => boolean) => {
+    // 在新版本中，addEventListener 返回一个对象，对象有 remove 方法
+    // 这里我们创建一个兼容的实现
+    return;
+  };
 }
 
 // 科技风格主题

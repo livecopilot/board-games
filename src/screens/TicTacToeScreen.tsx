@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Text,
@@ -54,8 +54,23 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   const [showRules, setShowRules] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  // 标记是否已确认退出
-  const [isConfirmedExit, setIsConfirmedExit] = useState(false);
+  // 使用 ref 来跟踪确认退出状态，避免闭包问题
+  const isConfirmedExitRef = useRef(false);
+
+  // 添加组件挂载状态跟踪
+  const isMountedRef = useRef(true);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 组件卸载时的清理
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // 设置默认困难难度
   React.useEffect(() => {
@@ -66,7 +81,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       // 如果已经确认退出，允许正常返回
-      if (isConfirmedExit) {
+      if (isConfirmedExitRef.current) {
         return;
       }
       
@@ -74,27 +89,34 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
       e.preventDefault();
       
       // 显示退出确认弹框
-      setShowExitDialog(true);
+      if (isMountedRef.current) {
+        setShowExitDialog(true);
+      }
     });
 
     return unsubscribe;
-  }, [navigation, isConfirmedExit]);
+  }, [navigation]);
 
   const handleBackPress = () => {
-    setShowExitDialog(true);
+    if (isMountedRef.current) {
+      setShowExitDialog(true);
+    }
   };
 
   const confirmExit = () => {
+    if (!isMountedRef.current) return;
+    
     setShowExitDialog(false);
-    setIsConfirmedExit(true);
-    // 使用setTimeout确保状态更新完成后再执行goBack
-    setTimeout(() => {
-      navigation.dispatch(CommonActions.goBack());
-    }, 0);
+    isConfirmedExitRef.current = true;
+    
+    // 立即执行导航
+    navigation.dispatch(CommonActions.goBack());
   };
 
   // 自动保存游戏状态
   const autoSaveGame = React.useCallback((isFirstMove: boolean = false) => {
+    if (!isMountedRef.current) return;
+    
     console.log(`[TicTacToeScreen] autoSaveGame called, isFirstMove: ${isFirstMove}, currentGameId: ${currentGameId}`);
     if (canSave(gameState)) {
       // 如果是第一次移动或者没有当前游戏ID，则创建新存档
@@ -108,23 +130,39 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
     // 检查棋盘是否有棋子
     const hasPieces = gameState.board.some(row => row.some(cell => cell !== null));
     if (hasPieces && canSave(gameState)) {
+      // 清除之前的定时器
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+
       // 延迟保存，确保游戏状态已完全更新
-      const timer = setTimeout(() => {
+      autoSaveTimerRef.current = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
         // 计算棋盘上的棋子数量来判断是否是第一次移动
         const pieceCount = gameState.board.flat().filter(cell => cell !== null).length;
         const isFirstMove = !currentGameId && pieceCount === 1;
         console.log(`[TicTacToeScreen] 检测到游戏状态变化，自动保存，isFirstMove: ${isFirstMove}, 棋子数: ${pieceCount}`);
         autoSaveGame(isFirstMove);
+        autoSaveTimerRef.current = null;
       }, 100);
-
-      return () => clearTimeout(timer);
     }
+
+    // 清理函数
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+    };
   }, [gameState.board, autoSaveGame, currentGameId, canSave]);
 
   // 处理存档加载
   const onLoadSave = React.useCallback(async (saveId: string) => {
+    if (!isMountedRef.current) return;
+    
     const savedGame = await handleLoadGame(saveId);
-    if (savedGame) {
+    if (savedGame && isMountedRef.current) {
       console.log(`[TicTacToeScreen] 加载存档成功，恢复游戏状态`);
       restoreGameState(
         savedGame.gameState,
@@ -136,6 +174,8 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
 
   // 重置游戏并开始新的存档
   const handleResetGame = React.useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     console.log(`[TicTacToeScreen] 重置游戏并开始新存档`);
     startNewGame();
     resetGame();
@@ -143,6 +183,8 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
 
   // 包装原始的playerMove，添加自动保存
   const handlePlayerMove = React.useCallback((position: { row: number; col: number }) => {
+    if (!isMountedRef.current) return false;
+    
     const success = playerMove(position);
     if (success) {
       console.log(`[TicTacToeScreen] 落子成功`);

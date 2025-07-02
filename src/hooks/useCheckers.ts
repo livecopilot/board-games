@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { CheckersGameState, Position, CheckersMove, AIDifficulty } from "../types";
 import {
   createCheckersBoard,
@@ -26,6 +26,62 @@ export const useCheckers = () => {
 
   // 使用ref来跟踪AI移动状态，避免循环调用
   const aiMoveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 添加组件挂载状态跟踪
+  const isMountedRef = useRef(true);
+
+  // 组件卸载时的清理
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (aiMoveTimeoutRef.current) {
+        clearTimeout(aiMoveTimeoutRef.current);
+        aiMoveTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // 安全的 setState 函数
+  const safeSetGameState = useCallback((newState: CheckersGameState | ((prev: CheckersGameState) => CheckersGameState)) => {
+    if (isMountedRef.current) {
+      setGameState(newState);
+    }
+  }, []);
+
+  const safeSetGameHistory = useCallback((newHistory: CheckersGameState[] | ((prev: CheckersGameState[]) => CheckersGameState[])) => {
+    if (isMountedRef.current) {
+      setGameHistory(newHistory);
+    }
+  }, []);
+
+  const safeSetSelectedPiece = useCallback((piece: Position | null) => {
+    if (isMountedRef.current) {
+      setSelectedPiece(piece);
+    }
+  }, []);
+
+  const safeSetAvailableMoves = useCallback((moves: CheckersMove[]) => {
+    if (isMountedRef.current) {
+      setAvailableMoves(moves);
+    }
+  }, []);
+
+  const safeSetIsAIThinking = useCallback((thinking: boolean) => {
+    if (isMountedRef.current) {
+      setIsAIThinking(thinking);
+    }
+  }, []);
+
+  const safeSetIsAIMode = useCallback((mode: boolean | ((prev: boolean) => boolean)) => {
+    if (isMountedRef.current) {
+      setIsAIMode(mode);
+    }
+  }, []);
+
+  const safeSetAIDifficulty = useCallback((difficulty: AIDifficulty) => {
+    if (isMountedRef.current) {
+      setAIDifficulty(difficulty);
+    }
+  }, []);
 
   // 重置游戏
   const resetGame = useCallback(() => {
@@ -35,18 +91,20 @@ export const useCheckers = () => {
       aiMoveTimeoutRef.current = null;
     }
 
+    if (!isMountedRef.current) return;
+
     const newState: CheckersGameState = {
       board: createCheckersBoard(),
       currentPlayer: "red",
       isGameOver: false,
       winner: null,
     };
-    setGameState(newState);
-    setGameHistory([newState]);
-    setSelectedPiece(null);
-    setAvailableMoves([]);
-    setIsAIThinking(false);
-  }, []);
+    safeSetGameState(newState);
+    safeSetGameHistory([newState]);
+    safeSetSelectedPiece(null);
+    safeSetAvailableMoves([]);
+    safeSetIsAIThinking(false);
+  }, [safeSetGameState, safeSetGameHistory, safeSetSelectedPiece, safeSetAvailableMoves, safeSetIsAIThinking]);
 
   // 选择棋子
   const selectPiece = useCallback(
