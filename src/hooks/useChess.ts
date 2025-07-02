@@ -17,6 +17,8 @@ export const useChess = () => {
     isGameOver: false,
     winner: null,
     isInCheck: false,
+    redInCheck: false,
+    blackInCheck: false,
     moveHistory: [],
   }));
 
@@ -103,7 +105,16 @@ export const useChess = () => {
       const newBoard = makeChessMove(prevState.board, move);
       const nextPlayer = prevState.currentPlayer === "red" ? "black" : "red";
       const winner = checkChessWinner(newBoard, nextPlayer);
-      const inCheck = isInCheck(newBoard, nextPlayer);
+
+      // 检查双方是否被将军
+      const redInCheck = isInCheck(newBoard, "red");
+      const blackInCheck = isInCheck(newBoard, "black");
+
+      // 保持向后兼容性：设置当前轮到的玩家的将军状态
+      const inCheck = nextPlayer === "red" ? redInCheck : blackInCheck;
+
+      console.log(`[executeMove] 移动完成: ${prevState.currentPlayer} -> ${nextPlayer}`);
+      console.log(`[executeMove] 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
 
       return {
         ...prevState,
@@ -111,7 +122,9 @@ export const useChess = () => {
         currentPlayer: nextPlayer,
         isGameOver: !!winner,
         winner,
-        isInCheck: inCheck,
+        isInCheck: inCheck, // 向后兼容
+        redInCheck,
+        blackInCheck,
         lastMove: move,
         moveHistory: [...prevState.moveHistory, move],
       };
@@ -160,7 +173,16 @@ export const useChess = () => {
           const newBoard = makeChessMove(currentState.board, aiMove);
           const nextPlayer = currentState.currentPlayer === "red" ? "black" : "red";
           const winner = checkChessWinner(newBoard, nextPlayer);
-          const inCheck = isInCheck(newBoard, nextPlayer);
+
+          // 检查双方是否被将军
+          const redInCheck = isInCheck(newBoard, "red");
+          const blackInCheck = isInCheck(newBoard, "black");
+
+          // 保持向后兼容性
+          const inCheck = nextPlayer === "red" ? redInCheck : blackInCheck;
+
+          console.log(`[AI移动] AI移动完成: ${currentState.currentPlayer} -> ${nextPlayer}`);
+          console.log(`[AI移动] 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
 
           setIsAIThinking(false);
 
@@ -171,6 +193,8 @@ export const useChess = () => {
             isGameOver: !!winner,
             winner,
             isInCheck: inCheck,
+            redInCheck,
+            blackInCheck,
             lastMove: aiMove,
             moveHistory: [...currentState.moveHistory, aiMove],
           };
@@ -201,6 +225,8 @@ export const useChess = () => {
       isGameOver: false,
       winner: null,
       isInCheck: false,
+      redInCheck: false,
+      blackInCheck: false,
       moveHistory: [],
     });
     setSelectedPiece(null);
@@ -225,7 +251,13 @@ export const useChess = () => {
 
     const currentPlayer = newHistoryLength % 2 === 0 ? "red" : "black";
     const winner = checkChessWinner(newBoard, currentPlayer);
-    const inCheck = isInCheck(newBoard, currentPlayer);
+
+    // 检查双方是否被将军
+    const redInCheck = isInCheck(newBoard, "red");
+    const blackInCheck = isInCheck(newBoard, "black");
+
+    // 保持向后兼容性
+    const inCheck = currentPlayer === "red" ? redInCheck : blackInCheck;
 
     setGameState({
       board: newBoard,
@@ -233,6 +265,8 @@ export const useChess = () => {
       isGameOver: !!winner,
       winner,
       isInCheck: inCheck,
+      redInCheck,
+      blackInCheck,
       lastMove: newHistory[newHistory.length - 1] || undefined,
       moveHistory: newHistory,
     });

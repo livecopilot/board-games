@@ -329,13 +329,15 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                         <Text
                           fontSize="md"
                           fontWeight="bold"
-                          color={gameState.currentPlayer === 'black' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
+                          color={gameState.isInCheck && gameState.currentPlayer === 'black' ? '#ff3030' : gameState.currentPlayer === 'black' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
                           fontFamily="mono"
                           letterSpacing={0.5}
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
+                          {gameState.isInCheck && gameState.currentPlayer === 'black' 
+                            ? '⚠️ 你被将军了！' 
+                            : gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
                         </Text>
                         
                         <Text
@@ -352,27 +354,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                     )}
                   </Box>
 
-                  {/* 将军提示 */}
-                  {gameState.isInCheck && gameState.currentPlayer === 'black' && !gameState.isGameOver && (
-                    <Box
-                      bg="rgba(255, 0, 0, 0.1)"
-                      borderWidth={1}
-                      borderColor="rgba(255, 0, 0, 0.4)"
-                      borderRadius="lg"
-                      p={2}
-                      w="100%"
-                      alignItems="center"
-                    >
-                      <Text
-                        fontSize="xs"
-                        color="#ff3030"
-                        fontFamily="mono"
-                        textAlign="center"
-                      >
-                        ⚠️ 将军！必须解除将军状态
-                      </Text>
-                    </Box>
-                  )}
+                 
                 </VStack>
 
                 {/* 对方右侧：简化控制按钮 */}
@@ -448,6 +430,10 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
             disabled={gameState.isGameOver || isAIThinking || (isAIMode && gameState.currentPlayer === 'black')}
             lastMove={gameState.lastMove}
             isAIMode={isAIMode}
+            isInCheck={gameState.isInCheck}
+            redInCheck={gameState.redInCheck}
+            blackInCheck={gameState.blackInCheck}
+            currentPlayer={gameState.currentPlayer}
           />
         </Box>
 

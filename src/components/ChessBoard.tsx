@@ -12,6 +12,10 @@ interface ChessBoardProps {
   disabled?: boolean;
   lastMove?: ChessMove | null;
   isAIMode?: boolean;
+  isInCheck?: boolean; // 向后兼容，已弃用
+  redInCheck?: boolean; // 红方是否被将军
+  blackInCheck?: boolean; // 黑方是否被将军
+  currentPlayer?: 'red' | 'black';
 }
 
 // 动态计算棋盘尺寸
@@ -270,7 +274,11 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   validMoves = [],
   disabled = false,
   lastMove = null,
-  isAIMode = false
+  isAIMode = false,
+  isInCheck = false,
+  redInCheck = false,
+  blackInCheck = false,
+  currentPlayer = 'red'
 }) => {
   // 选中效果闪烁动画
   const blinkAnimation = useRef(new Animated.Value(1)).current;
@@ -317,7 +325,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
     const animations: Animated.CompositeAnimation[] = [];
 
-    if (selectedPiece) {
+    if (selectedPiece || isInCheck) {
       const blinkAnim = createBlinkAnimation(blinkAnimation);
       const pulseAnim = createPulseAnimation(pulseAnimation);
       animations.push(blinkAnim, pulseAnim);
@@ -336,7 +344,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return () => {
       animations.forEach(anim => anim.stop());
     };
-  }, [selectedPiece, lastMove, blinkAnimation, pulseAnimation, moveToBlinkAnimation, moveToPulseAnimation]);
+  }, [selectedPiece, lastMove, isInCheck, blinkAnimation, pulseAnimation, moveToBlinkAnimation, moveToPulseAnimation]);
 
   const isSelected = (row: number, col: number) => {
     return selectedPiece?.row === row && selectedPiece?.col === col;
@@ -354,12 +362,28 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return lastMove?.to.row === row && lastMove?.to.col === col;
   };
 
+  // 检查是否是被将军的王棋
+  const isKingInCheck = (row: number, col: number): boolean => {
+    const piece = board[row][col];
+    if (!piece || piece.type !== 'king') return false;
+    
+    // 检查该王是否被将军
+    const kingInCheck = (piece.player === 'red' && redInCheck) || (piece.player === 'black' && blackInCheck);
+    
+    if (kingInCheck) {
+      console.log(`[ChessBoard] 检测到被将军的王棋: 位置(${row},${col}), 玩家: ${piece.player}, 红方被将军: ${redInCheck}, 黑方被将军: ${blackInCheck}`);
+    }
+    
+    return kingInCheck;
+  };
+
   const renderCell = (row: number, col: number) => {
     const piece = board[row][col];
     const selected = isSelected(row, col);
     const canMove = isValidMove(row, col);
     const isMoveFrom = isLastMoveFrom(row, col);
     const isMoveTo = isLastMoveTo(row, col);
+    const kingInCheck = isKingInCheck(row, col);
 
     return (
       <Pressable
@@ -427,6 +451,66 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
           />
         )}
 
+        {/* 被将军的王棋特殊标志 */}
+        {kingInCheck && (
+          <>
+            {/* 外层危险警告圆圈 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.5),
+                top: CELL_SIZE * (0.5 - 0.5),
+                width: CELL_SIZE * 1,
+                height: CELL_SIZE * 1,
+                borderRadius: CELL_SIZE * 0.5,
+                borderWidth: 4,
+                borderColor: '#FF0000',
+                backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                transform: [{ scale: pulseAnimation }],
+                opacity: blinkAnimation,
+              }}
+            />
+            {/* 内层闪烁效果 */}
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: CELL_SIZE * (0.5 - 0.45),
+                top: CELL_SIZE * (0.5 - 0.45),
+                width: CELL_SIZE * 0.9,
+                height: CELL_SIZE * 0.9,
+                borderRadius: CELL_SIZE * 0.45,
+                borderWidth: 3,
+                borderColor: '#FF3030',
+                backgroundColor: 'rgba(255, 48, 48, 0.2)',
+                shadowColor: '#FF0000',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 1,
+                shadowRadius: 15,
+                elevation: 15,
+                opacity: blinkAnimation,
+              }}
+            />
+            {/* 警告符号 */}
+            <Box
+              position="absolute"
+              left={`${CELL_SIZE * 0.1}px`}
+              top={`${CELL_SIZE * 0.05}px`}
+              w={`${CELL_SIZE * 0.25}px`}
+              h={`${CELL_SIZE * 0.25}px`}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text
+                fontSize={`${Math.max(10, CELL_SIZE * 0.2)}px`}
+                color="#FF0000"
+                fontWeight="900"
+              >
+                ⚠️
+              </Text>
+            </Box>
+          </>
+        )}
+
         {/* 移动后的闪烁效果 */}
         {isMoveTo && (
           <>
@@ -478,11 +562,16 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
               h={`${CELL_SIZE * 0.85}px`}
               borderRadius="full"
               bg={piece.player === 'red' ? '#8B0000' : '#2F4F4F'}
-              borderWidth={selected ? 3 : isMoveTo ? 3 : 2}
-              borderColor={selected ? '#228B22' : isMoveTo ? '#A9A9A9' : piece.player === 'red' ? '#4A0000' : '#000000'}
+              borderWidth={kingInCheck ? 4 : selected ? 3 : isMoveTo ? 3 : 2}
+              borderColor={
+                kingInCheck ? '#FF0000' :
+                selected ? '#228B22' : 
+                isMoveTo ? '#A9A9A9' : 
+                piece.player === 'red' ? '#4A0000' : '#000000'
+              }
               alignItems="center"
               justifyContent="center"
-              shadow={isMoveTo ? 8 : 6}
+              shadow={kingInCheck ? 10 : isMoveTo ? 8 : 6}
               position="relative"
             >
               {/* 棋子主体 - 木质色调 */}

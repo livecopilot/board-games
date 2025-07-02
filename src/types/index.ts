@@ -105,7 +105,9 @@ export interface ChessGameState {
   currentPlayer: "red" | "black";
   isGameOver: boolean;
   winner: "red" | "black" | "draw" | null;
-  isInCheck?: boolean; // 是否被将军
+  isInCheck?: boolean; // 是否被将军 - 已弃用
+  redInCheck?: boolean; // 红方是否被将军
+  blackInCheck?: boolean; // 黑方是否被将军
   lastMove?: ChessMove;
   moveHistory: ChessMove[];
 }

@@ -222,10 +222,12 @@ const findKing = (board: ChessBoard, player: "red" | "black"): Position | null =
     for (let col = 0; col < 9; col++) {
       const piece = board[row][col];
       if (piece && piece.type === "king" && piece.player === player) {
+        console.log(`[findKing] 找到 ${player} 的王在 (${row}, ${col})`);
         return { row, col };
       }
     }
   }
+  console.log(`[findKing] 没有找到 ${player} 的王！`);
   return null;
 };
 
@@ -402,6 +404,8 @@ const getCannonMoves = (board: ChessBoard, position: Position, piece: NonNullabl
     { row: 0, col: 1 },
   ];
 
+  console.log(`[getCannonMoves] 计算炮 ${piece.player} 在 (${row}, ${col}) 的移动`);
+
   for (const dir of directions) {
     let hasJumped = false;
 
@@ -415,8 +419,10 @@ const getCannonMoves = (board: ChessBoard, position: Position, piece: NonNullabl
       if (target) {
         if (!hasJumped) {
           hasJumped = true;
+          console.log(`[getCannonMoves] 炮台在 (${newRow}, ${newCol}): ${target.type} ${target.player}`);
         } else {
           if (target.player !== piece.player) {
+            console.log(`[getCannonMoves] 炮可以攻击 (${newRow}, ${newCol}): ${target.type} ${target.player}`);
             moves.push({
               from: position,
               to: { row: newRow, col: newCol },
@@ -434,6 +440,7 @@ const getCannonMoves = (board: ChessBoard, position: Position, piece: NonNullabl
     }
   }
 
+  console.log(`[getCannonMoves] 炮 ${piece.player} 在 (${row}, ${col}) 总共有 ${moves.length} 个移动`);
   return moves;
 };
 
@@ -526,19 +533,34 @@ export const isInCheck = (board: ChessBoard, player: "red" | "black"): boolean =
 
   const opponent = player === "red" ? "black" : "red";
 
+  console.log(`[isInCheck] 检查 ${player} 是否被将军，王的位置: (${kingPos.row}, ${kingPos.col})`);
+
   // 检查对方所有棋子是否能攻击到帅/将
   for (let row = 0; row < 10; row++) {
     for (let col = 0; col < 9; col++) {
       const piece = board[row][col];
       if (piece && piece.player === opponent) {
         const moves = getChessPieceMoves(board, { row, col }, piece);
+
+        // 特别检查炮的攻击
+        if (piece.type === "cannon") {
+          console.log(
+            `[isInCheck] 检查炮 ${piece.player} 在 (${row}, ${col}), 可攻击位置:`,
+            moves.filter((m) => m.captured).map((m) => `(${m.to.row}, ${m.to.col})`)
+          );
+        }
+
         if (moves.some((move) => move.to.row === kingPos.row && move.to.col === kingPos.col)) {
+          console.log(
+            `[isInCheck] 发现将军！${piece.type} ${piece.player} 在 (${row}, ${col}) 可以攻击到王 (${kingPos.row}, ${kingPos.col})`
+          );
           return true;
         }
       }
     }
   }
 
+  console.log(`[isInCheck] ${player} 没有被将军`);
   return false;
 };
 

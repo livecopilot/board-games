@@ -128,8 +128,8 @@ const ChessControls: React.FC<ChessControlsProps> = ({
                   fontFamily="mono"
                 >
                   {isAIMode 
-                    ? '红方（你）' 
-                    : '红方（我方）'}
+                    ? (currentPlayer === 'red' ? '红方（你）' : '黑方（AI）')
+                    : (currentPlayer === 'red' ? '红方（我方）' : '黑方（我方）')}
                 </Text>
               </VStack>
             )}
@@ -157,27 +157,7 @@ const ChessControls: React.FC<ChessControlsProps> = ({
             )}
           </Box>
 
-          {/* 将军提示 */}
-          {isInCheck && !isGameOver && (
-            <Box
-              bg="rgba(255, 0, 0, 0.1)"
-              borderWidth={1}
-              borderColor="rgba(255, 0, 0, 0.4)"
-              borderRadius="lg"
-              p={2}
-              w="100%"
-              alignItems="center"
-            >
-              <Text
-                fontSize="xs"
-                color="#ff3030"
-                fontFamily="mono"
-                textAlign="center"
-              >
-                ⚠️ 将军！必须解除将军状态
-              </Text>
-            </Box>
-          )}
+          
         </VStack>
 
         {/* 右侧：控制按钮 */}
