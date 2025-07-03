@@ -35,7 +35,9 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
     toggleAIMode,
     setAIDifficultyLevel,
     undoMove,
+    undoMoveForPlayer,
     canUndo,
+    canUndoForPlayer,
     getValidMoves,
     restoreGameState,
     aiDifficulty,
@@ -312,8 +314,8 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.winner === 'black' ? '🎉 黑方获胜！' : 
-                           gameState.winner === 'red' ? '对方获胜' : 
+                          {gameState.winner === 'black' ? '🎉 我方获胜！' : 
+                           gameState.winner === 'red' ? '😔 对方获胜' : 
                            '平局'}
                         </Text>
                         <Text
@@ -338,7 +340,7 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
+                          {gameState.currentPlayer === 'black' ? '🎯 轮到我方了！' : '⏳ 等待对方...'}
                         </Text>
                         
                         <Text
@@ -420,24 +422,24 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
 
                     {/* 撤销按钮 */}
                     <Pressable
-                      onPress={undoMove}
-                      isDisabled={!canUndo || !!gameState.mustCapture}
-                      bg={canUndo && !gameState.mustCapture ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+                      onPress={() => undoMoveForPlayer('black')}
+                      isDisabled={!canUndoForPlayer('black') || !!gameState.mustCapture}
+                      bg={canUndoForPlayer('black') && !gameState.mustCapture ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
                       borderWidth={1}
-                      borderColor={canUndo && !gameState.mustCapture ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
+                      borderColor={canUndoForPlayer('black') && !gameState.mustCapture ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
                       borderRadius="lg"
                       px={2}
                       py={2}
                       flex={1}
                       alignItems="center"
-                      _pressed={canUndo && !gameState.mustCapture ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-                      shadow={canUndo && !gameState.mustCapture ? 2 : 0}
-                      opacity={canUndo && !gameState.mustCapture ? 1 : 0.5}
+                      _pressed={canUndoForPlayer('black') && !gameState.mustCapture ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+                      shadow={canUndoForPlayer('black') && !gameState.mustCapture ? 2 : 0}
+                      opacity={canUndoForPlayer('black') && !gameState.mustCapture ? 1 : 0.5}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="arrow-undo" size={12} color={canUndo && !gameState.mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                        <IconFont name="arrow-undo" size={12} color={canUndoForPlayer('black') && !gameState.mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                         <Text
-                          color={canUndo && !gameState.mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
+                          color={canUndoForPlayer('black') && !gameState.mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                           fontWeight="bold"
                           fontSize="xs"
                           fontFamily="mono"
@@ -470,8 +472,10 @@ const CheckersScreen: React.FC<CheckersScreenProps> = ({ navigation }) => {
           isAIMode={isAIMode}
           isAIThinking={isAIThinking}
           canUndo={canUndo}
+          canUndoForPlayer={canUndoForPlayer}
           onReset={handleResetGame}
           onUndo={undoMove}
+          onUndoForPlayer={undoMoveForPlayer}
           onToggleAI={toggleAIMode}
           mustCapture={!!gameState.mustCapture}
         />

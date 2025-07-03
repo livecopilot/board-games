@@ -302,6 +302,41 @@ export const useCheckers = () => {
     setIsAIThinking(false);
   }, [gameHistory, isAIThinking]);
 
+  // 指定玩家撤销移动（双人模式专用）
+  const undoMoveForPlayer = useCallback((player: "red" | "black") => {
+    if (gameHistory.length <= 1 || isAIThinking) return;
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    if (!isAIMode) {
+      const currentState = gameHistory[gameHistory.length - 1];
+      // 跳棋中，当前轮到的玩家就是下一个要下的，所以最后下的是相反的玩家
+      const lastMovePlayer = currentState.currentPlayer === "red" ? "black" : "red";
+      
+      // 只能撤销自己的移动
+      if (lastMovePlayer !== player) return;
+    }
+
+    // 调用原有的撤销逻辑
+    undoMove();
+  }, [gameHistory, isAIMode, isAIThinking, undoMove]);
+
+  // 检查指定玩家是否可以撤销（双人模式专用）
+  const canUndoForPlayer = useCallback((player: "red" | "black"): boolean => {
+    if (gameHistory.length <= 1 || isAIThinking) return false;
+
+    // 在AI模式下，只有红方（玩家）可以撤销
+    if (isAIMode) {
+      return player === "red";
+    }
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    const currentState = gameHistory[gameHistory.length - 1];
+    // 跳棋中，当前轮到的玩家就是下一个要下的，所以最后下的是相反的玩家
+    const lastMovePlayer = currentState.currentPlayer === "red" ? "black" : "red";
+    
+    return lastMovePlayer === player;
+  }, [gameHistory, isAIMode, isAIThinking]);
+
   // 获取可移动的位置（用于高亮显示）
   const getValidMoves = useCallback(() => {
     return availableMoves.map((move) => move.to);
@@ -354,5 +389,7 @@ export const useCheckers = () => {
     canUndo: gameHistory.length > 1 && !isAIThinking,
     getValidMoves,
     restoreGameState,
+    undoMoveForPlayer,
+    canUndoForPlayer,
   };
 };

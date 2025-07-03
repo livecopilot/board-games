@@ -19,8 +19,10 @@ interface ChessControlsProps {
   redInCheck?: boolean; // 红方是否被将军
   blackInCheck?: boolean; // 黑方是否被将军
   canUndo: boolean;
+  canUndoForPlayer: (player: 'red' | 'black') => boolean;
   onReset: () => void;
   onUndo: () => void;
+  onUndoForPlayer: (player: 'red' | 'black') => void;
   onToggleAI: () => void;
 }
 
@@ -34,8 +36,10 @@ const ChessControls: React.FC<ChessControlsProps> = ({
   redInCheck,
   blackInCheck,
   canUndo,
+  canUndoForPlayer,
   onReset,
   onUndo,
+  onUndoForPlayer,
   onToggleAI,
 }) => {
   const getPlayerText = (player: 'red' | 'black') => {
@@ -263,24 +267,24 @@ const ChessControls: React.FC<ChessControlsProps> = ({
 
             {/* 撤销按钮 */}
             <Pressable
-              onPress={onUndo}
-              isDisabled={!canUndo}
-              bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+              onPress={isAIMode ? onUndo : () => onUndoForPlayer('red')}
+              isDisabled={isAIMode ? !canUndo : !canUndoForPlayer('red')}
+              bg={(isAIMode ? canUndo : canUndoForPlayer('red')) ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
               borderWidth={1}
-              borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
+              borderColor={(isAIMode ? canUndo : canUndoForPlayer('red')) ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
               borderRadius="lg"
               px={2}
               py={2}
               flex={1}
               alignItems="center"
-              _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-              shadow={canUndo ? 2 : 0}
-              opacity={canUndo ? 1 : 0.5}
+              _pressed={(isAIMode ? canUndo : canUndoForPlayer('red')) ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+              shadow={(isAIMode ? canUndo : canUndoForPlayer('red')) ? 2 : 0}
+              opacity={(isAIMode ? canUndo : canUndoForPlayer('red')) ? 1 : 0.5}
             >
               <HStack alignItems="center" space={1}>
-                <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                <IconFont name="arrow-undo" size={12} color={(isAIMode ? canUndo : canUndoForPlayer('red')) ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                 <Text
-                  color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
+                  color={(isAIMode ? canUndo : canUndoForPlayer('red')) ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                   fontWeight="bold"
                   fontSize="xs"
                   fontFamily="mono"

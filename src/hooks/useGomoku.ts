@@ -199,6 +199,42 @@ export const useGomoku = () => {
     });
   }, [gameState.moveHistory, isAIMode, isAIThinking]);
 
+  // 指定玩家撤销移动（双人模式专用）
+  const undoMoveForPlayer = useCallback((player: "black" | "white") => {
+    if (gameState.moveHistory.length === 0 || isAIThinking) return;
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    if (!isAIMode) {
+      const lastMoveIndex = gameState.moveHistory.length - 1;
+      const lastMovePlayer = lastMoveIndex % 2 === 0 ? "black" : "white";
+      
+      // 只能撤销自己的移动
+      if (lastMovePlayer !== player) return;
+    }
+
+    // 调用原有的撤销逻辑
+    undoMove();
+  }, [gameState.moveHistory, isAIMode, isAIThinking, undoMove]);
+
+  // 检查是否可以撤销
+  const canUndo = gameState.moveHistory.length > 0 && !isAIThinking;
+
+  // 检查指定玩家是否可以撤销（双人模式专用）
+  const canUndoForPlayer = useCallback((player: "black" | "white"): boolean => {
+    if (gameState.moveHistory.length === 0 || isAIThinking) return false;
+
+    // 在AI模式下，只有黑方（玩家）可以撤销
+    if (isAIMode) {
+      return player === "black";
+    }
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    const lastMoveIndex = gameState.moveHistory.length - 1;
+    const lastMovePlayer = lastMoveIndex % 2 === 0 ? "black" : "white";
+    
+    return lastMovePlayer === player;
+  }, [gameState.moveHistory, isAIMode, isAIThinking]);
+
   // 切换AI模式
   const toggleAIMode = useCallback(() => {
     setIsAIMode((prev) => !prev);
@@ -213,9 +249,6 @@ export const useGomoku = () => {
   const setAIDifficultyLevel = useCallback((difficulty: AIDifficulty) => {
     setAiDifficulty(difficulty);
   }, []);
-
-  // 检查是否可以撤销
-  const canUndo = gameState.moveHistory.length > 0 && !isAIThinking;
 
   // 恢复游戏状态
   const restoreGameState = useCallback(
@@ -248,9 +281,11 @@ export const useGomoku = () => {
     canPlacePiece,
     resetGame,
     undoMove,
+    undoMoveForPlayer,
+    canUndo,
+    canUndoForPlayer,
     toggleAIMode,
     setAIDifficultyLevel,
-    canUndo,
     restoreGameState,
   };
 };

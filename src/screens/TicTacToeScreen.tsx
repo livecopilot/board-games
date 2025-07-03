@@ -32,7 +32,9 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
     toggleAIMode,
     setAIDifficultyLevel,
     undoMove,
+    undoMoveForPlayer,
     canUndo,
+    canUndoForPlayer,
     restoreGameState,
     aiDifficulty,
   } = useTicTacToe();
@@ -307,7 +309,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           {!isAIMode && (
             <View style={{ marginBottom: 15, transform: [{ rotate: '180deg' }] }}>
               <HStack alignItems="flex-start" px={4} space={3} w="100%">
-                {/* 对方左侧：游戏状态显示 */}
+                {/* O方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
                     bg={gameState.currentPlayer === 'O' ? "rgba(255, 255, 255, 0.25)" : "rgba(255, 255, 255, 0.02)"}
@@ -320,7 +322,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                     shadow={gameState.currentPlayer === 'O' ? 4 : 1}
                     mt={2}
                   >
-                    {/* 游戏状态显示 */}
+                    {/* 游戏状态显示 - 从O方视角 */}
                     {gameState.isGameOver ? (
                       <VStack alignItems="center" space={1}>
                         <Text
@@ -332,8 +334,8 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.winner === 'O' ? '🎉 玩家O获胜！' : 
-                           gameState.winner === 'X' ? '对方获胜' : 
+                          {gameState.winner === 'O' ? '🎉 我方获胜！' : 
+                           gameState.winner === 'X' ? '😔 对方获胜' : 
                            '🤝 平局'}
                         </Text>
                         <Text
@@ -358,7 +360,7 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.currentPlayer === 'O' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
+                          {gameState.currentPlayer === 'O' ? '🎯 轮到我方了！' : '⏳ 等待对方...'}
                         </Text>
                         
                         <Text
@@ -369,13 +371,12 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
                         >
                           玩家O（我方）
                         </Text>
-
                       </VStack>
                     )}
                   </Box>
                 </VStack>
 
-                {/* 对方右侧：简化控制按钮 */}
+                {/* O方右侧：简化控制按钮 */}
                 <VStack flex={1} mt={2} minH="90px" space={2}>
                   {/* 操作按钮行 */}
                   <HStack space={2} w="100%">
@@ -408,24 +409,24 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
 
                     {/* 撤销按钮 */}
                     <Pressable
-                      onPress={undoMove}
-                      isDisabled={!canUndo}
-                      bg={canUndo ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+                      onPress={() => undoMoveForPlayer('O')}
+                      isDisabled={!canUndoForPlayer('O')}
+                      bg={canUndoForPlayer('O') ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
                       borderWidth={1}
-                      borderColor={canUndo ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
+                      borderColor={canUndoForPlayer('O') ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
                       borderRadius="lg"
                       px={2}
                       py={2}
                       flex={1}
                       alignItems="center"
-                      _pressed={canUndo ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-                      shadow={canUndo ? 2 : 0}
-                      opacity={canUndo ? 1 : 0.5}
+                      _pressed={canUndoForPlayer('O') ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+                      shadow={canUndoForPlayer('O') ? 2 : 0}
+                      opacity={canUndoForPlayer('O') ? 1 : 0.5}
                     >
                       <HStack alignItems="center" space={1}>
-                        <IconFont name="arrow-undo" size={12} color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                        <IconFont name="arrow-undo" size={12} color={canUndoForPlayer('O') ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                         <Text
-                          color={canUndo ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
+                          color={canUndoForPlayer('O') ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                           fontWeight="bold"
                           fontSize="xs"
                           fontFamily="mono"
@@ -455,8 +456,10 @@ const TicTacToeScreen: React.FC<TicTacToeScreenProps> = ({ navigation }) => {
           isAIMode={isAIMode}
           isAIThinking={isAIThinking}
           canUndo={canUndo}
+          canUndoForPlayer={canUndoForPlayer}
           onReset={handleResetGame}
           onUndo={undoMove}
+          onUndoForPlayer={undoMoveForPlayer}
           onToggleAI={toggleAIMode}
         />
       </ScrollView>

@@ -16,8 +16,10 @@ interface CheckersControlsProps {
   isAIMode: boolean;
   isAIThinking: boolean;
   canUndo: boolean;
+  canUndoForPlayer: (player: 'red' | 'black') => boolean;
   onReset: () => void;
   onUndo: () => void;
+  onUndoForPlayer: (player: 'red' | 'black') => void;
   onToggleAI: () => void;
   mustCapture?: boolean;
 }
@@ -29,8 +31,10 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
   isAIMode,
   isAIThinking,
   canUndo,
+  canUndoForPlayer,
   onReset,
   onUndo,
+  onUndoForPlayer,
   onToggleAI,
   mustCapture,
 }) => {
@@ -42,7 +46,7 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
       if (isAIMode) {
         return winner === 'red' ? '🎉 你获胜了！' : '😔 AI获胜';
       } else {
-        return winner === 'red' ? '🎉 红方获胜！' : '🎉 黑方获胜！';
+        return winner === 'red' ? '🎉 我方获胜！' : '😔 对方获胜';
       }
     }
     
@@ -54,14 +58,14 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
       if (isAIMode) {
         return currentPlayer === 'red' ? '⚡ 你必须继续跳跃！' : '⚡ AI必须继续跳跃';
       } else {
-        return currentPlayer === 'red' ? '⚡ 红方必须继续跳跃！' : '⚡ 黑方必须继续跳跃！';
+        return currentPlayer === 'red' ? '⚡ 我方必须继续跳跃！' : '⚡ 对方必须继续跳跃';
       }
     }
     
     if (isAIMode) {
       return currentPlayer === 'red' ? '🎯 轮到你了！' : '⏳ 等待AI...';
     } else {
-      return currentPlayer === 'red' ? '🎯 轮到红方！' : '🎯 轮到黑方！';
+      return currentPlayer === 'red' ? '🎯 轮到我方了！' : '⏳ 等待对方...';
     }
   };
 
@@ -251,24 +255,24 @@ const CheckersControls: React.FC<CheckersControlsProps> = ({
 
             {/* 撤销按钮 */}
             <Pressable
-              onPress={onUndo}
-              isDisabled={!canUndo || mustCapture}
-              bg={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
+              onPress={isAIMode ? onUndo : () => onUndoForPlayer('red')}
+              isDisabled={(isAIMode ? !canUndo : !canUndoForPlayer('red')) || mustCapture}
+              bg={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? "rgba(255, 128, 0, 0.2)" : "rgba(80, 80, 80, 0.15)"}
               borderWidth={1}
-              borderColor={canUndo && !mustCapture ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
+              borderColor={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? "rgba(255, 128, 0, 0.7)" : "rgba(80, 80, 80, 0.4)"}
               borderRadius="lg"
               px={2}
               py={2}
               flex={1}
               alignItems="center"
-              _pressed={canUndo && !mustCapture ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
-              shadow={canUndo && !mustCapture ? 2 : 0}
-              opacity={canUndo && !mustCapture ? 1 : 0.5}
+              _pressed={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? { bg: "rgba(255, 128, 0, 0.3)" } : {}}
+              shadow={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? 2 : 0}
+              opacity={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? 1 : 0.5}
             >
               <HStack alignItems="center" space={1}>
-                <IconFont name="arrow-undo" size={12} color={canUndo && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
+                <IconFont name="arrow-undo" size={12} color={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"} />
                 <Text
-                  color={canUndo && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
+                  color={(isAIMode ? canUndo : canUndoForPlayer('red')) && !mustCapture ? "rgba(255, 255, 255, 0.9)" : "rgba(120, 120, 120, 0.7)"}
                   fontWeight="bold"
                   fontSize="xs"
                   fontFamily="mono"

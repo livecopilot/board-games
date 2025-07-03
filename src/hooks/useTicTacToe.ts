@@ -204,6 +204,45 @@ export const useTicTacToe = () => {
     safeSetIsAIThinking(false);
   }, [gameHistory, isAIThinking, safeSetGameState, safeSetGameHistory, safeSetIsAIThinking]);
 
+  // 指定玩家撤销移动（双人模式专用）
+  const undoMoveForPlayer = useCallback((player: "X" | "O") => {
+    if (!isMountedRef.current || gameHistory.length <= 1 || isAIThinking) {
+      return;
+    }
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    if (!isAIMode) {
+      const currentState = gameHistory[gameHistory.length - 1];
+      // 井字棋中，当前轮到的玩家就是下一个要下的，所以最后下的是相反的玩家
+      const lastMovePlayer = currentState.currentPlayer === "X" ? "O" : "X";
+      
+      // 只能撤销自己的移动
+      if (lastMovePlayer !== player) return;
+    }
+
+    // 调用原有的撤销逻辑
+    undoMove();
+  }, [gameHistory, isAIMode, isAIThinking, undoMove]);
+
+  // 检查指定玩家是否可以撤销（双人模式专用）
+  const canUndoForPlayer = useCallback((player: "X" | "O"): boolean => {
+    if (!isMountedRef.current || gameHistory.length <= 1 || isAIThinking) {
+      return false;
+    }
+
+    // 在AI模式下，只有X方（玩家）可以撤销
+    if (isAIMode) {
+      return player === "X";
+    }
+
+    // 在双人模式下，检查最后一步移动是否是该玩家下的
+    const currentState = gameHistory[gameHistory.length - 1];
+    // 井字棋中，当前轮到的玩家就是下一个要下的，所以最后下的是相反的玩家
+    const lastMovePlayer = currentState.currentPlayer === "X" ? "O" : "X";
+    
+    return lastMovePlayer === player;
+  }, [gameHistory, isAIMode, isAIThinking]);
+
   // 恢复游戏状态
   const restoreGameState = useCallback(
     (restoredState: GameState, restoredAIMode: boolean, restoredAIDifficulty?: AIDifficulty) => {
@@ -243,5 +282,7 @@ export const useTicTacToe = () => {
     undoMove,
     canUndo: gameHistory.length > 1 && !isAIThinking,
     restoreGameState,
+    undoMoveForPlayer,
+    canUndoForPlayer,
   };
 };
