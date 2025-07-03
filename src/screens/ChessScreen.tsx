@@ -284,7 +284,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
           {!isAIMode && (
             <View style={{ marginBottom: 15, transform: [{ rotate: '180deg' }] }}>
               <HStack alignItems="flex-start" px={4} space={3} w="100%">
-                {/* 对方左侧：游戏状态显示 */}
+                {/* 黑方左侧：游戏状态显示 */}
                 <VStack flex={1} space={2} minH="90px" justifyContent="flex-start">
                   <Box
                     bg={gameState.currentPlayer === 'black' ? "rgba(255, 215, 0, 0.3)" : "rgba(255, 215, 0, 0.05)"}
@@ -297,7 +297,7 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                     shadow={gameState.currentPlayer === 'black' ? 5 : 2}
                     mt={2}
                   >
-                    {/* 游戏状态显示 */}
+                    {/* 游戏状态显示 - 从黑方视角 */}
                     {gameState.isGameOver ? (
                       <VStack alignItems="center" space={1}>
                         <Text
@@ -309,8 +309,8 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.winner === 'black' ? '🎉 黑方获胜！' : 
-                           gameState.winner === 'red' ? '对方获胜' : 
+                          {gameState.winner === 'black' ? '🎉 我方获胜！' : 
+                           gameState.winner === 'red' ? '😔 对方获胜' : 
                            '🤝 平局'}
                         </Text>
                         <Text
@@ -329,15 +329,19 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                         <Text
                           fontSize="md"
                           fontWeight="bold"
-                          color={gameState.blackInCheck && gameState.currentPlayer === 'black' ? '#ff3030' : gameState.currentPlayer === 'black' ? '#00ff88' : 'rgba(255, 255, 255, 0.5)'}
+                          color={
+                            gameState.blackInCheck ? '#ff3030' : 
+                            gameState.currentPlayer === 'black' ? '#00ff88' : 
+                            'rgba(255, 255, 255, 0.5)'
+                          }
                           fontFamily="mono"
                           letterSpacing={0.5}
                           textAlign="center"
                           numberOfLines={2}
                         >
-                          {gameState.blackInCheck && gameState.currentPlayer === 'black' 
-                            ? '⚠️ 你被将军了！' 
-                            : gameState.currentPlayer === 'black' ? '🎯 轮到你了！' : '⏳ 等待对方...'}
+                          {gameState.blackInCheck ? '⚠️ 我方被将军了！' : 
+                           gameState.currentPlayer === 'black' ? '🎯 轮到我方了！' : 
+                           '⏳ 等待对方...'}
                         </Text>
                         
                         <Text
@@ -348,16 +352,12 @@ const ChessScreen: React.FC<ChessScreenProps> = ({ navigation }) => {
                         >
                           黑方（我方）
                         </Text>
-                        
-                        
                       </VStack>
                     )}
                   </Box>
-
-                 
                 </VStack>
 
-                {/* 对方右侧：简化控制按钮 */}
+                {/* 黑方右侧：简化控制按钮 */}
                 <VStack flex={1} mt={2} minH="90px" space={2}>
                   {/* 操作按钮行 */}
                   <HStack space={2} w="100%">

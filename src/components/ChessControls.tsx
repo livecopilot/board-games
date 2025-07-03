@@ -50,7 +50,8 @@ const ChessControls: React.FC<ChessControlsProps> = ({
       if (isAIMode) {
         return winner === 'red' ? '🎉 你获胜了！' : '😔 AI获胜';
       } else {
-        return winner === 'red' ? '🎉 红方获胜！' : '🎉 黑方获胜！';
+        // 双人模式：从红方视角
+        return winner === 'red' ? '🎉 我方获胜！' : '😔 对方获胜';
       }
     }
     
@@ -58,28 +59,25 @@ const ChessControls: React.FC<ChessControlsProps> = ({
       return '🤖 AI思考中...';
     }
 
-    // 优先显示将军状态，无论轮到谁
-    if (redInCheck) {
-      if (isAIMode) {
-        return '⚠️ 你被将军了！'; // 在AI模式下，红方就是玩家
-      } else {
-        return '⚠️ 红方被将军！';
+    // 在双人模式下，这个控制器只显示红方相关的将军状态
+    if (!isAIMode) {
+      if (redInCheck) {
+        return '⚠️ 我方被将军了！';
       }
+      // 不显示黑方被将军的状态，让黑方控制器自己处理
+      return currentPlayer === 'red' ? '🎯 轮到我方了！' : '⏳ 等待对方...';
+    }
+
+    // AI模式的原有逻辑
+    if (redInCheck) {
+      return '⚠️ 你被将军了！';
     }
     
     if (blackInCheck) {
-      if (isAIMode) {
-        return '⚠️ AI被将军了！';
-      } else {
-        return '⚠️ 黑方被将军！';
-      }
+      return '⚠️ AI被将军了！';
     }
     
-    if (isAIMode) {
-      return currentPlayer === 'red' ? '🎯 轮到你了！' : '⏳ 等待AI...';
-    } else {
-      return currentPlayer === 'red' ? '🎯 轮到红方！' : '🎯 轮到黑方！';
-    }
+    return currentPlayer === 'red' ? '🎯 轮到你了！' : '⏳ 等待AI...';
   };
 
   const getStatusColor = () => {
@@ -97,7 +95,15 @@ const ChessControls: React.FC<ChessControlsProps> = ({
       return 'rgba(255, 215, 0, 0.9)'; // 金色
     }
     
-    // 优先显示将军状态的颜色
+    // 在双人模式下，只显示红方被将军的颜色
+    if (!isAIMode) {
+      if (redInCheck) {
+        return '#ff3030'; // 红色警告
+      }
+      return currentPlayer === 'red' ? '#ff3030' : '#ffffff';
+    }
+    
+    // AI模式的原有逻辑
     if (redInCheck || blackInCheck) {
       return '#ff3030'; // 红色警告
     }
@@ -139,25 +145,28 @@ const ChessControls: React.FC<ChessControlsProps> = ({
                 <Text
                   fontSize="xs"
                   color={
-                    // 如果有将军状态，根据被将军的一方显示颜色
-                    redInCheck ? 'white' : 
-                    blackInCheck ? 'rgba(255, 255, 255, 0.6)' :
-                    // 否则根据当前玩家显示颜色
-                    (currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)')
+                    // 在双人模式下，这个控制器代表红方
+                    !isAIMode ? (
+                      redInCheck ? 'white' : 
+                      (currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)')
+                    ) : (
+                      // AI模式的原有逻辑
+                      redInCheck ? 'white' : 
+                      blackInCheck ? 'rgba(255, 255, 255, 0.6)' :
+                      (currentPlayer === 'red' ? 'white' : 'rgba(255, 255, 255, 0.6)')
+                    )
                   }
                   fontFamily="mono"
                 >
                   {
-                    // 如果有将军状态，显示被将军一方的信息
-                    redInCheck ? (
-                      isAIMode ? '红方（你）' : '红方（我方）'
-                    ) : blackInCheck ? (
-                      isAIMode ? '黑方（AI）' : '黑方（我方）'
+                    !isAIMode ? (
+                      // 双人模式：从红方视角显示
+                      '红方（我方）'
                     ) : (
-                      // 否则显示当前轮到的玩家信息
-                      isAIMode 
-                        ? (currentPlayer === 'red' ? '红方（你）' : '黑方（AI）')
-                        : (currentPlayer === 'red' ? '红方（我方）' : '黑方（我方）')
+                      // AI模式的原有逻辑
+                      redInCheck ? '红方（你）' : 
+                      blackInCheck ? '黑方（AI）' :
+                      (currentPlayer === 'red' ? '红方（你）' : '黑方（AI）')
                     )
                   }
                 </Text>
